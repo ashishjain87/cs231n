@@ -35,8 +35,16 @@ def example_usage():
     ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight)) = get_top_left_bottom_right_coordinates(yolo_label, rand_idx)
     show_bbox_tl_br(yolo_image_path, (xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
 
+def show_all():
+    for filename in os.scandir(LABELS_DIR):
+        
+        yolo_label = read_background_annotation(yolo_label_path)
+        rand_idx = randomly_choose_object_of_interest(yolo_label.shape[0])    
+        ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight)) = get_top_left_bottom_right_coordinates(yolo_label, rand_idx)
+        show_bbox_tl_br(yolo_image_path, (xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
+
 if __name__ == "__main__":
-    example_usage()
+    show_all()
 
 
 
