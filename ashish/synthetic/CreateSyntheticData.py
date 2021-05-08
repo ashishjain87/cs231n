@@ -15,21 +15,10 @@ import random
 import sys
 import yaml
 import SyntheticConfig as synthetic_config
+import Startup
 
 from PIL import Image, ImageOps
 from pathlib import Path
-
-def setup_logging(logging_config_path='logging.yaml', default_level=logging.INFO):
-    if os.path.exists(logging_config_path):
-        with open(logging_config_path, 'rt') as file:
-            config = yaml.safe_load(file.read())
-        logging.config.dictConfig(config)
-    else:
-        logging.basicConfig(level=default_level)
-
-def parse_config():
-    config = confuse.Configuration('CreateSyntheticData')
-    return config
 
 def randomly_sample_new_image_size(image_size):
     (width, height) = image_size
@@ -243,7 +232,7 @@ def compute_annotation(pil_background_image, pil_synthetic_image, pil_occlusion_
 
     return (xCenterWrtBackgroundImage, yCenterWrtBackgroundImage, occlusionWidthWrtBackgroundImage, occlusionHeightWrtBackgroundImage)
 
-def save_image_annotation(path_background_image, image_annotation, target_annotations_dir, cur_image_id):
+def save_image_annotation(path_background_image, image_annotation, target_annotations_dir, cur_image_id, occlusion_name_occlusion_id_dict, occlusion_name):
     logger = logging.getLogger(__name__)
 
     background_file_name = get_filename_without_ext(path_background_image)
@@ -256,14 +245,20 @@ def save_image_annotation(path_background_image, image_annotation, target_annota
         os.mkdir(target_annotations_dir)
         logger.info('Created target annotations directory %s', target_annotations_dir)
 
+    occlusion_id = '8' # Don't care
+    if (occlusion_name.upper() not in occlusion_name_occlusion_id_dict):
+        logger.error('Occlusion name %s not found in dictionary %s', occlusion_name, 'occlusion_name_occlusion_id_dict')
+    else:
+        occlusion_id = occlusion_name_occlusion_id_dict[occlusion_name.upper()]
+
     with open(target_path_annotations_file, 'w') as fileHandle:
         (xCenterWrtBackgroundImage, yCenterWrtBackgroundImage, occlusionWidthWrtBackgroundImage, occlusionHeightWrtBackgroundImage) = image_annotation
-        fileHandle.write('%s %s %s %s %s' % (10, xCenterWrtBackgroundImage, yCenterWrtBackgroundImage, occlusionWidthWrtBackgroundImage, occlusionHeightWrtBackgroundImage))
+        fileHandle.write('%s %s %s %s %s' % (occlusion_id, xCenterWrtBackgroundImage, yCenterWrtBackgroundImage, occlusionWidthWrtBackgroundImage, occlusionHeightWrtBackgroundImage))
         fileHandle.write('\n')
 
-    logger.info('Wrote the occlusion annotation to %s', target_path_annotations_file) 
+    logger.debug('Wrote the occlusion annotation to %s', target_path_annotations_file) 
 
-def process_resized_occlusion_image(occlusion_image, occlusion_name, target_dir, background_image, path_background_image, threshold, cur_image_id, target_annotations_dir): 
+def process_resized_occlusion_image(occlusion_image, occlusion_name, target_dir, background_image, path_background_image, threshold, cur_image_id, target_annotations_dir, occlusion_name_occlusion_id_dict): 
     logger = logging.getLogger(__name__)
 
     (file_name, target_path) = compute_target_path(target_dir, path_background_image, cur_image_id)
@@ -278,7 +273,7 @@ def process_resized_occlusion_image(occlusion_image, occlusion_name, target_dir,
     # Generate annotation and save
     image_annotation = compute_annotation(background_image, synthetic_image, occlusion_image, point, original_occlusion_image_grayscale_image_mask)
     # TODO: Add support for taking a mapping dictionary which takes as input the name of the occlusion and has a mapping to the integer label for the same.
-    save_image_annotation(path_background_image, image_annotation, target_annotations_dir, cur_image_id)
+    save_image_annotation(path_background_image, image_annotation, target_annotations_dir, cur_image_id, occlusion_name_occlusion_id_dict, occlusion_name)
 
     logger.debug('image_info, annotation created for %s', image_info['file_name'])
 
@@ -339,7 +334,7 @@ def get_all_folders_in_path(path):
             break
     return folders
 
-def process_original_occlusion_image(path_occlusion_image, path_background_image, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name): 
+def process_original_occlusion_image(path_occlusion_image, path_background_image, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict): 
     logger = logging.getLogger(__name__)
 
     occlusion_image_filename = get_filename_without_ext(path_occlusion_image)
@@ -353,16 +348,18 @@ def process_original_occlusion_image(path_occlusion_image, path_background_image
 
     num_runs_per_original_image = 1 # TODO: Move to config
 
+    occlusion_name = get_immediate_parent_folder(path_occlusion_image)
+
     for i in range(num_runs_per_original_image): 
         logger.debug('For occlusion %s, image %s, run %d of %d', occlusion_name, occlusion_image_filename, i+1, num_runs_per_original_image) 
         occlusion_image_resized = resize_image_randomly(occlusion_image) # specify the gaussian and standard deviation
-        (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(occlusion_image_resized, occlusion_name, target_dir_path_images, background_image, path_background_image, threshold, cur_image_id, target_dir_path_annotations)
+        (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(occlusion_image_resized, occlusion_name, target_dir_path_images, background_image, path_background_image, threshold, cur_image_id, target_dir_path_annotations, occlusion_name_occlusion_id_dict)
         image_info_collection.append(image_info)
         image_annotation_collection.append(image_annotation)
 
     return (image_annotation_collection, image_info_collection, cur_image_id)
 
-def create_synthetic_images_for_all_images_under_current_folders(path_background_dir, path_foreground_dir, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name):
+def create_synthetic_images_for_all_images_under_current_folders(path_background_dir, path_foreground_dir, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict):
     logger = logging.getLogger(__name__)
 
     if not os.path.isdir(target_dir_path_images):
@@ -397,24 +394,20 @@ def create_synthetic_images_for_all_images_under_current_folders(path_background
 
     for foreground_image_path in foreground_image_paths:
         for background_image_path in background_image_paths:
-            (image_annotation_collection, image_info_collection, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name) 
+            (image_annotation_collection, image_info_collection, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict) 
 
 def main():
-    setup_logging()
+    startup = Startup.Startup()
+    startup.configure()
+
     logger = logging.getLogger(__name__)
     logger.info('Started')
 
-    syntheticConfig = synthetic_config.SyntheticConfig('CreateSyntheticData')
-    syntheticConfig.initialize()
-    syntheticConfig.log()
-
-    if not os.path.isdir(syntheticConfig.target_dir):
-        os.mkdir(syntheticConfig.target_dir)
-        logger.info('Created target super directory %s', syntheticConfig.target_dir)
-
     occlusion_name = "PlasticBag"
+    syntheticConfig = startup.synthetic_config
+
     #process_original_occlusion_image(path_foreground_file, path_background_file, threshold, target_dir, cur_image_id, occlusion_name) 
-    create_synthetic_images_for_all_images_under_current_folders(syntheticConfig.path_background_dir, syntheticConfig.path_foreground_dir, syntheticConfig.threshold, syntheticConfig.target_dir_path_images, syntheticConfig.target_dir_path_annotations, syntheticConfig.cur_image_id, occlusion_name)
+    create_synthetic_images_for_all_images_under_current_folders(syntheticConfig.path_background_dir, syntheticConfig.path_foreground_dir, syntheticConfig.threshold, syntheticConfig.target_dir_path_images, syntheticConfig.target_dir_path_annotations, syntheticConfig.cur_image_id, startup.occlusion_name_occlusion_id_dict)
 
     logger.info('Finished')
 

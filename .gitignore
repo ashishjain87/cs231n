@@ -133,3 +133,9 @@ dmypy.json
 *.png
 *.jpeg
 *.jpg
+
+# Mac
+.DS_Store
+
+# Vim
+*.swp
