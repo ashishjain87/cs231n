@@ -287,7 +287,7 @@ def save_image_annotation(path_background_image, image_annotation, target_annota
 
     logger.debug('Wrote the occlusion annotation to %s', target_path_annotations_file) 
 
-def process_resized_occlusion_image(occlusion_image, occlusion_name, target_dir, background_image, path_background_image, threshold, cur_image_id, target_annotations_dir, occlusion_name_occlusion_id_dict): 
+def process_resized_occlusion_image(occlusion_image, occlusion_name, target_dir, background_image, background_annotation, path_background_image, threshold, cur_image_id, target_annotations_dir, occlusion_name_occlusion_id_dict): 
     logger = logging.getLogger(__name__)
 
     (file_name, target_path) = compute_target_path(target_dir, path_background_image, cur_image_id)
@@ -336,6 +336,22 @@ def get_immediate_subdirectory_paths(super_dir):
     subdirs = get_immediate_subdirectories(super_dir)
     return [os.path.join(super_dir, subdir) for subdir in subdirs]
 
+def get_background_annotation_file_path(image_file_path, annotations_dir_path):
+    # Add support for dealing with scenario where images and annotations are in the same directory
+    common_path = get_common_path(image_file_path, annotations_dir_path)
+    annotation_folder_name = get_leaf_folder(annotations_dir_path) 
+    image_file_name_without_ext = get_filename_without_ext(image_file_path)
+    background_annotations_file_name = '%s.%s' % (image_file_name_without_ext, 'txt') 
+    return os.path.join(common_path, annotation_folder_name, background_annotations_file_name)
+
+def get_common_path(path1, path2):
+    return os.path.commonpath([path1, path2])
+
+def get_immediate_grandparent_folder(abs_path):
+    path = Path(path)
+    # TODO: Add support for checking whether grandparent directory actually exists before returning.
+    return str(path.parents[1])
+
 def get_immediate_parent_folder(abs_path):
     folders = get_all_folders_in_path(abs_path)
     return folders[0] # assuming path is not at root
@@ -344,6 +360,13 @@ def get_filename_without_ext(path):
     filename_with_ext = os.path.basename(path)
     list = os.path.splitext(filename_with_ext)
     return list[0]
+
+def get_leaf_folder(path):
+    if os.path.isdir(path):
+        return Path(path).name
+    else:
+        folders = get_all_folders_in_path(path)
+        return folders[0]
 
 def get_filename_and_extension(path): 
     path = Path(path)
@@ -365,7 +388,7 @@ def get_all_folders_in_path(path):
             break
     return folders
 
-def process_original_occlusion_image(path_occlusion_image, path_background_image, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict): 
+def process_original_occlusion_image(path_occlusion_image, path_background_image, background_annotation_file_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict): 
     logger = logging.getLogger(__name__)
 
     occlusion_image_filename = get_filename_without_ext(path_occlusion_image)
@@ -374,6 +397,7 @@ def process_original_occlusion_image(path_occlusion_image, path_background_image
 
     # TODO: Read the annotations file corresponding to the background image; error if not found
     background_image = Image.open(path_background_image)
+    background_annotation = None
 
     image_info_collection = []
     image_annotation_collection = []
@@ -386,13 +410,13 @@ def process_original_occlusion_image(path_occlusion_image, path_background_image
         logger.debug('For occlusion %s, image %s, run %d of %d', occlusion_name, occlusion_image_filename, i+1, num_runs_per_original_image) 
         occlusion_image_resized = resize_image_randomly(occlusion_image) # specify the gaussian and standard deviation
         # TODO: pass corresponding annotations file
-        (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(occlusion_image_resized, occlusion_name, target_dir_path_images, background_image, path_background_image, threshold, cur_image_id, target_dir_path_annotations, occlusion_name_occlusion_id_dict)
+        (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(occlusion_image_resized, occlusion_name, target_dir_path_images, background_image, background_annotation, path_background_image, threshold, cur_image_id, target_dir_path_annotations, occlusion_name_occlusion_id_dict)
         image_info_collection.append(image_info)
         image_annotation_collection.append(image_annotation)
 
     return (image_annotation_collection, image_info_collection, cur_image_id)
 
-def create_synthetic_images_for_all_images_under_current_folders(path_background_dir, path_foreground_dir, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict):
+def create_synthetic_images_for_all_images_under_current_folders(background_dir_path_images, background_dir_path_annotations, path_foreground_dir, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict):
     logger = logging.getLogger(__name__)
 
     if not os.path.isdir(target_dir_path_images):
@@ -403,7 +427,7 @@ def create_synthetic_images_for_all_images_under_current_folders(path_background
         os.mkdir(target_dir_path_annotations)
         logger.info('Created target directory %s', target_dir_path_annotations)
 
-    logger.info('create_synthetic_images - background: %s, foreground: %s, image output: %s, annotations output: %s', path_background_dir, path_foreground_dir, target_dir_path_images, target_dir_path_annotations)
+    logger.info('create_synthetic_images - background images: %s, background annotations: %s, foreground: %s, image output: %s, annotations output: %s', background_dir_path_images, background_dir_path_annotations, path_foreground_dir, target_dir_path_images, target_dir_path_annotations)
 
     # TODO: Move to config
     foregound_valid_extensions = ["jpg", "jpeg", "JPEG", "JPG"] # image masking code doesn't work well with PNGs
@@ -418,7 +442,7 @@ def create_synthetic_images_for_all_images_under_current_folders(path_background
     background_valid_extensions = ["jpg", "jpeg", "JPEG", "JPG", "png", "PNG"]
     background_image_paths = []
     for valid_extension in background_valid_extensions:
-        background_search_path = path_background_dir + "/" + "*." + valid_extension
+        background_search_path = background_dir_path_images + "/" + "*." + valid_extension
         for file_path in glob.glob(background_search_path):
             background_image_paths.append(file_path)
 
@@ -427,8 +451,8 @@ def create_synthetic_images_for_all_images_under_current_folders(path_background
 
     for foreground_image_path in foreground_image_paths:
         for background_image_path in background_image_paths:
-            #TODO: pass annotations background directory
-            (image_annotation_collection, image_info_collection, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict) 
+            background_annotation_file_path = get_background_annotation_file_path(background_image_path, background_dir_path_annotations)
+            (image_annotation_collection, image_info_collection, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, background_annotation_file_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict) 
 
 def main():
     startup = Startup.Startup()
@@ -442,7 +466,7 @@ def main():
 
     #process_original_occlusion_image(path_foreground_file, path_background_file, threshold, target_dir, cur_image_id, occlusion_name) 
     # TODO: pass background annotations directory
-    #create_synthetic_images_for_all_images_under_current_folders(syntheticConfig.path_background_dir, syntheticConfig.path_foreground_dir, syntheticConfig.threshold, syntheticConfig.target_dir_path_images, syntheticConfig.target_dir_path_annotations, syntheticConfig.cur_image_id, startup.occlusion_name_occlusion_id_dict)
+    create_synthetic_images_for_all_images_under_current_folders(syntheticConfig.background_dir_path_images, syntheticConfig.background_dir_path_annotations, syntheticConfig.path_foreground_dir, syntheticConfig.threshold, syntheticConfig.target_dir_path_images, syntheticConfig.target_dir_path_annotations, syntheticConfig.cur_image_id, startup.occlusion_name_occlusion_id_dict)
 
     logger.info('Finished')
 
