@@ -1,0 +1,22 @@
+appName: CreateSyntheticData
+
+background:
+        pathBackgroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/background/000002_10.png
+        pathBackgroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/background
+        imagesDirName: images
+        annotationsDirName: labels
+
+pathForegroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/plasticbags/reduced/PlasticBag01_100x100.jpeg
+pathForegroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/plasticbags/reduced/PlasticBag
+pathOcclusionNameToOcclusionIdMapping: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/occlusion-name-to-occlusion-id.csv
+
+output:
+        pathTargetDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/output
+        imagesDirName: images
+        annotationsDirName: labels
+
+StartImageId: 80000
+
+threshold: 250
+
+probabilityPrioritizeObjectsOfInterest: 0.5
