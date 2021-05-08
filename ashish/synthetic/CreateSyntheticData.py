@@ -66,6 +66,32 @@ def randomly_sample_point_within_image(pil_image_bg, pil_image_fg):
 
     return randomly_sample_point_within_rectangle((xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
 
+def get_top_left_bottom_right_coordinates(background_annotations, index):
+    # TODO:
+    return ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
+
+def randomly_sample_point_within_image_or_object_of_interest(background_image, occlusion_image, background_annotations, p):
+    logger = logging.getLogger(__name__)
+    # We decide between image and object of interest
+
+    (numRows, numCols) = background_annotations.shape 
+    useImage = True
+    if numRows == 0:
+        logger.debug('No annotations found for %s', path)
+    else:
+        r = math.random.uniform()
+        useImage = True if r > p else False
+
+    if useImage:
+        return randomly_sample_point_within_image(background_image, occlusion_image)
+    else:
+        index = randomly_choose_object_of_interest(background_annotations)
+        points = get_top_left_bottom_right_coordinates(background_annotations, index)
+        return randomly_sample_point_within_rectangle(points)
+
+def randomly_choose_object_of_interest(background_annotations):
+    # TODO:
+
 def randomly_sample_point_within_rectangle(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates):
     logger = logging.getLogger(__name__)
 
@@ -196,6 +222,7 @@ def save_synthetic_image(background_image, synthetic_image, occlusion_image, poi
 def create_synthetic_image(background_image, occlusion_image, threshold):
     logger = logging.getLogger(__name__)
 
+    # TODO: call the high level method which chooses between whole image versus object of interest
     point = randomly_sample_point_within_image(background_image, occlusion_image)
     (x0, y0) = point
     logger.debug('Randomly sampled point within background image is (%s,%s)', x0, y0)
@@ -264,6 +291,8 @@ def process_resized_occlusion_image(occlusion_image, occlusion_name, target_dir,
     (file_name, target_path) = compute_target_path(target_dir, path_background_image, cur_image_id)
 
     # synthetic image generation and save
+    # TODO: Read the annotations file 
+    # TODO: pass the background annotations file
     synthetic_image, point, original_occlusion_image_grayscale_image_mask = create_synthetic_image(background_image, occlusion_image, threshold)
     save_synthetic_image(background_image, synthetic_image, occlusion_image, point, threshold, target_path)
 
@@ -341,6 +370,7 @@ def process_original_occlusion_image(path_occlusion_image, path_background_image
     occlusion_image = Image.open(path_occlusion_image)
     occlusion_name = get_immediate_parent_folder(path_occlusion_image) 
 
+    # TODO: Read the annotations file corresponding to the background image; error if not found
     background_image = Image.open(path_background_image)
 
     image_info_collection = []
@@ -353,6 +383,7 @@ def process_original_occlusion_image(path_occlusion_image, path_background_image
     for i in range(num_runs_per_original_image): 
         logger.debug('For occlusion %s, image %s, run %d of %d', occlusion_name, occlusion_image_filename, i+1, num_runs_per_original_image) 
         occlusion_image_resized = resize_image_randomly(occlusion_image) # specify the gaussian and standard deviation
+        # TODO: pass corresponding annotations file
         (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(occlusion_image_resized, occlusion_name, target_dir_path_images, background_image, path_background_image, threshold, cur_image_id, target_dir_path_annotations, occlusion_name_occlusion_id_dict)
         image_info_collection.append(image_info)
         image_annotation_collection.append(image_annotation)
@@ -394,6 +425,7 @@ def create_synthetic_images_for_all_images_under_current_folders(path_background
 
     for foreground_image_path in foreground_image_paths:
         for background_image_path in background_image_paths:
+            #TODO: pass annotations background directory
             (image_annotation_collection, image_info_collection, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict) 
 
 def main():
@@ -407,6 +439,7 @@ def main():
     syntheticConfig = startup.synthetic_config
 
     #process_original_occlusion_image(path_foreground_file, path_background_file, threshold, target_dir, cur_image_id, occlusion_name) 
+    # TODO: pass background annotations directory
     create_synthetic_images_for_all_images_under_current_folders(syntheticConfig.path_background_dir, syntheticConfig.path_foreground_dir, syntheticConfig.threshold, syntheticConfig.target_dir_path_images, syntheticConfig.target_dir_path_annotations, syntheticConfig.cur_image_id, startup.occlusion_name_occlusion_id_dict)
 
     logger.info('Finished')

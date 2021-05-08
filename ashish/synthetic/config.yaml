@@ -15,3 +15,5 @@ output:
 StartImageId: 80000
 
 threshold: 250
+
+probabilityPrioritizeObjectsOfInterest: 0.5
