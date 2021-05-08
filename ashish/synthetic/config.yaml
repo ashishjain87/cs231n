@@ -1,0 +1,15 @@
+appName: CreateSyntheticData
+
+pathBackgroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/background/000002_10.png
+pathBackgroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/background
+
+pathForegroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/plasticbags/reduced/PlasticBag01_100x100.jpeg
+pathForegroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/plasticbags/reduced
+
+output:
+        pathTargetDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/output
+        imagesDirName: images
+
+StartImageId: 80000
+
+threshold: 250
