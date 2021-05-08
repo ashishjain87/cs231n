@@ -14,6 +14,7 @@ import os
 import random
 import sys
 import yaml
+import SyntheticConfig as synthetic_config
 
 from PIL import Image, ImageOps
 from pathlib import Path
@@ -338,7 +339,7 @@ def get_all_folders_in_path(path):
             break
     return folders
 
-def process_original_occlusion_image(path_occlusion_image, path_background_image, threshold, target_dir, cur_image_id, occlusion_name): 
+def process_original_occlusion_image(path_occlusion_image, path_background_image, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name): 
     logger = logging.getLogger(__name__)
 
     occlusion_image_filename = get_filename_without_ext(path_occlusion_image)
@@ -355,20 +356,24 @@ def process_original_occlusion_image(path_occlusion_image, path_background_image
     for i in range(num_runs_per_original_image): 
         logger.debug('For occlusion %s, image %s, run %d of %d', occlusion_name, occlusion_image_filename, i+1, num_runs_per_original_image) 
         occlusion_image_resized = resize_image_randomly(occlusion_image) # specify the gaussian and standard deviation
-        (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(occlusion_image_resized, occlusion_name, target_dir, background_image, path_background_image, threshold, cur_image_id, target_dir)
+        (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(occlusion_image_resized, occlusion_name, target_dir_path_images, background_image, path_background_image, threshold, cur_image_id, target_dir_path_annotations)
         image_info_collection.append(image_info)
         image_annotation_collection.append(image_annotation)
 
     return (image_annotation_collection, image_info_collection, cur_image_id)
 
-def create_synthetic_images_for_all_images_under_current_folders(path_background_dir, path_foreground_dir, threshold, target_dir, cur_image_id, occlusion_name):
+def create_synthetic_images_for_all_images_under_current_folders(path_background_dir, path_foreground_dir, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name):
     logger = logging.getLogger(__name__)
 
-    if not os.path.isdir(target_dir):
-        os.mkdir(target_dir)
-        logger.info('Created target directory %s', target_dir)
+    if not os.path.isdir(target_dir_path_images):
+        os.mkdir(target_dir_path_images)
+        logger.info('Created target directory %s', target_dir_path_images)
 
-    logger.info('create_synthetic_images - background: %s, foreground: %s, output: %s', path_background_dir, path_foreground_dir, target_dir)
+    if not os.path.isdir(target_dir_path_annotations):
+        os.mkdir(target_dir_path_annotations)
+        logger.info('Created target directory %s', target_dir_path_annotations)
+
+    logger.info('create_synthetic_images - background: %s, foreground: %s, image output: %s, annotations output: %s', path_background_dir, path_foreground_dir, target_dir_path_images, target_dir_path_annotations)
 
     # TODO: Move to config
     foregound_valid_extensions = ["jpg", "jpeg", "JPEG", "JPG"] # image masking code doesn't work well with PNGs
@@ -392,49 +397,24 @@ def create_synthetic_images_for_all_images_under_current_folders(path_background
 
     for foreground_image_path in foreground_image_paths:
         for background_image_path in background_image_paths:
-            print(foreground_image_path, background_image_path)
-            (image_annotation_collection, image_info_collection, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, threshold, target_dir, cur_image_id, occlusion_name) 
+            (image_annotation_collection, image_info_collection, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name) 
 
 def main():
     setup_logging()
-    config = parse_config()
     logger = logging.getLogger(__name__)
-
     logger.info('Started')
 
-    #path_foreground_file = str(config['pathForegroundFile'])
-    #path_background_file = str(config['pathBackgroundFile'])
-    path_foreground_dir = str(config['pathForegroundDir'])
-    path_background_dir = str(config['pathBackgroundDir'])
+    syntheticConfig = synthetic_config.SyntheticConfig('CreateSyntheticData')
+    syntheticConfig.initialize()
+    syntheticConfig.log()
 
-    threshold = int(str(config['threshold']))
-
-    cur_image_id = int(str(config['StartImageId']))
-
-    target_dir = str(config['output']['pathTargetDir'])
-
-    images_dir_name = str(config['output']['imagesDirName'])
-    target_dir_path_images = os.path.join(target_dir, images_dir_name)
-
-    #logger.info('pathForegroundFile %s', path_foreground_file)
-    #logger.info('pathBackgroundFile %s', path_background_file)
-    logger.info('pathForegroundDir %s', path_foreground_dir)
-    logger.info('pathBackgroundDir %s', path_background_dir)
-    logger.info('threshold %s', threshold)
-    logger.info('start image id %s', cur_image_id)
-    logger.info('target dir %s', target_dir)
-    logger.info('target dir path images %s', target_dir_path_images)
-
-    #background_image = Image.open(path_background_file)
-    #occlusion_image = Image.open(path_foreground_file)
-
-    if not os.path.isdir(target_dir):
-        os.mkdir(target_dir)
-        logger.info('Created target super directory %s', target_dir)
+    if not os.path.isdir(syntheticConfig.target_dir):
+        os.mkdir(syntheticConfig.target_dir)
+        logger.info('Created target super directory %s', syntheticConfig.target_dir)
 
     occlusion_name = "PlasticBag"
     #process_original_occlusion_image(path_foreground_file, path_background_file, threshold, target_dir, cur_image_id, occlusion_name) 
-    create_synthetic_images_for_all_images_under_current_folders(path_background_dir, path_foreground_dir, threshold, target_dir, cur_image_id, occlusion_name)
+    create_synthetic_images_for_all_images_under_current_folders(syntheticConfig.path_background_dir, syntheticConfig.path_foreground_dir, syntheticConfig.threshold, syntheticConfig.target_dir_path_images, syntheticConfig.target_dir_path_annotations, syntheticConfig.cur_image_id, occlusion_name)
 
     logger.info('Finished')
 

@@ -9,6 +9,7 @@ pathForegroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/c
 output:
         pathTargetDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/output
         imagesDirName: images
+        annotationsDirName: labels
 
 StartImageId: 80000
 
