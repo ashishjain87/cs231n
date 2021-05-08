@@ -68,7 +68,8 @@ def randomly_sample_point_within_image(pil_image_bg, pil_image_fg):
 
 def get_top_left_bottom_right_coordinates(background_annotations, index):
     # TODO:
-    return ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
+    #return ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
+    pass
 
 def randomly_sample_point_within_image_or_object_of_interest(background_image, occlusion_image, background_annotations, p):
     logger = logging.getLogger(__name__)
@@ -91,6 +92,7 @@ def randomly_sample_point_within_image_or_object_of_interest(background_image, o
 
 def randomly_choose_object_of_interest(background_annotations):
     # TODO:
+    pass
 
 def randomly_sample_point_within_rectangle(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates):
     logger = logging.getLogger(__name__)
@@ -440,7 +442,7 @@ def main():
 
     #process_original_occlusion_image(path_foreground_file, path_background_file, threshold, target_dir, cur_image_id, occlusion_name) 
     # TODO: pass background annotations directory
-    create_synthetic_images_for_all_images_under_current_folders(syntheticConfig.path_background_dir, syntheticConfig.path_foreground_dir, syntheticConfig.threshold, syntheticConfig.target_dir_path_images, syntheticConfig.target_dir_path_annotations, syntheticConfig.cur_image_id, startup.occlusion_name_occlusion_id_dict)
+    #create_synthetic_images_for_all_images_under_current_folders(syntheticConfig.path_background_dir, syntheticConfig.path_foreground_dir, syntheticConfig.threshold, syntheticConfig.target_dir_path_images, syntheticConfig.target_dir_path_annotations, syntheticConfig.cur_image_id, startup.occlusion_name_occlusion_id_dict)
 
     logger.info('Finished')
 

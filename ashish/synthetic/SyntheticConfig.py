@@ -12,18 +12,23 @@ class SyntheticConfig:
 
         config = confuse.Configuration('CreateSyntheticData')
 
-        #TODO: Add support for reading images and labels for background images
         self.path_foreground_dir = str(config['pathForegroundDir'])
-        self.path_background_dir = str(config['pathBackgroundDir'])
+
+        #TODO: Add support for reading images and labels for background images
+        self.path_background_dir = str(config['background']['pathBackgroundDir'])
+        background_images_dir_name = str(config['background']['imagesDirName'])
+        self.background_dir_path_images = os.path.join(self.path_background_dir, background_images_dir_name)
+        background_annotations_dir_name = str(config['background']['annotationsDirName'])
+        self.background_dir_path_annotations = os.path.join(self.path_background_dir, background_annotations_dir_name)
+
         self.threshold = int(str(config['threshold']))
         self.cur_image_id = int(str(config['StartImageId']))
+
         self.target_dir = str(config['output']['pathTargetDir'])
-
-        self.images_dir_name = str(config['output']['imagesDirName'])
-        self.target_dir_path_images = os.path.join(self.target_dir, self.images_dir_name)
-
-        self.annotations_dir_name = str(config['output']['annotationsDirName'])
-        self.target_dir_path_annotations = os.path.join(self.target_dir, self.annotations_dir_name)
+        output_images_dir_name = str(config['output']['imagesDirName'])
+        self.target_dir_path_images = os.path.join(self.target_dir, output_images_dir_name)
+        output_annotations_dir_name = str(config['output']['annotationsDirName'])
+        self.target_dir_path_annotations = os.path.join(self.target_dir, output_annotations_dir_name)
 
         self.path_mapping_file_occlusion_name_to_occlusion_id = str(config['pathOcclusionNameToOcclusionIdMapping'])
 
@@ -35,10 +40,17 @@ class SyntheticConfig:
         logger = logging.getLogger(__name__)
 
         logger.info('pathForegroundDir %s', self.path_foreground_dir)
+
         logger.info('pathBackgroundDir %s', self.path_background_dir)
+        logger.info('background images dir path %s', self.background_dir_path_images)
+        logger.info('background annotations dir path %s', self.background_dir_path_annotations)
+
         logger.info('threshold %s', self.threshold)
         logger.info('start image id %s', self.cur_image_id)
+
         logger.info('target dir %s', self.target_dir)
-        logger.info('images dir name %s', self.images_dir_name)
+        logger.info('target images dir path %s', self.target_dir_path_images)
+        logger.info('target annotations dir path %s', self.target_dir_path_annotations)
+
         logger.info('pathOcclusionNameToOcclusionIdMapping %s', self.path_mapping_file_occlusion_name_to_occlusion_id)
         logger.info('probabilityPrioritizeObjectsOfInterest %f', self.probability_prioritize_objects_of_interest)
