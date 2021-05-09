@@ -58,13 +58,9 @@ def randomly_sample_point_within_image(pil_image_bg, pil_image_fg):
     if foregroundHeight >= backgroundHeight:
         logger.error('%s is greater or equal to %s specifically %s >= %s', 'foregroundHeight', 'backgroundHeight', foregroundHeight, backgroundHeight)
 
-    xTopLeft = 0
-    yTopLeft = 0
+    (minWidth, minHeight, maxWidth, maxHeight) = get_largest_bounding_box_assuming_using_center_point_to_affix_foreground_image(pil_image_bg, pil_image_fg)
 
-    xBottomRight = backgroundWidth - foregroundWidth
-    yBottomRight = backgroundHeight - foregroundHeight
-
-    return randomly_sample_point_within_rectangle((xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
+    return randomly_sample_point_within_rectangle_assuming_center_point_to_affix_foreground_image((minWidth, minHeight), (maxWidth, maxHeight), pil_image_bg, pil_image_fg)
 
 def yolo_to_kitti(annotation, pil_background_image):
     x, y, width, height = annotation[1], annotation[2], annotation[3], annotation[4]
@@ -104,12 +100,56 @@ def randomly_sample_point_within_image_or_object_of_interest(background_image, o
 
         (xTopLeft, yTopLeft) = topLeft
         (xBottomRight, yBottomRight) = bottomRight
-        logger.debug('Point chosen topLeft: (%i, %i), bottomRight: (%i, %i)', xTopLeft, yTopLeft, xBottomRight, yBottomRight)
+        logger.debug('Rectangle chosen topLeft: (%i, %i), bottomRight: (%i, %i)', xTopLeft, yTopLeft, xBottomRight, yBottomRight)
 
-        return randomly_sample_point_within_rectangle(topLeft, bottomRight)
+        return randomly_sample_point_within_rectangle_assuming_center_point_to_affix_foreground_image(topLeft, bottomRight, background_image, occlusion_image)
 
 def randomly_choose_object_of_interest(num_annotations) -> int: # returns index
     return random.randint(0,num_annotations-1)
+
+def get_largest_bounding_box_assuming_using_center_point_to_affix_foreground_image(pil_image_bg, pil_image_fg):
+    logger = logging.getLogger(__name__)
+
+    (backgroundWidth, backgroundHeight) = pil_image_bg.size
+    (foregroundWidth, foregroundHeight) = pil_image_fg.size
+
+    width = round(foregroundWidth/2.0)
+    height = round(foregroundHeight/2.0)
+
+    logger.debug('background image size: (%s, %s)', backgroundWidth, backgroundHeight)
+    logger.debug('foreground image size: (%s, %s), half-size-rounded: (%s, %s)', foregroundWidth, foregroundHeight, width, height)
+
+    minWidth = width 
+    minHeight = height
+    maxWidth = backgroundWidth - width 
+    maxHeight = backgroundHeight - height
+
+    return (minWidth, minHeight, maxWidth, maxHeight) 
+
+def correct_bounding_box_coordinates_assuming_center_point_to_affix_foreground_image(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates, pil_image_bg, pil_image_fg):
+    logger = logging.getLogger(__name__)
+
+    (xTopLeft, yTopLeft) = backgroundImageTopLeftCoordinates
+    (xBottomRight, yBottomRight) = backgroundImageBottomRightCoordinates
+
+    (minWidth, minHeight, maxWidth, maxHeight) = get_largest_bounding_box_assuming_using_center_point_to_affix_foreground_image(pil_image_bg, pil_image_fg)
+
+    logger.debug('Largest bounding box coordinates: (%s, %s), (%s, %s)', minWidth, minHeight, maxWidth, maxHeight) 
+    logger.debug('Original coordinates: (%s, %s), (%s, %s)', xTopLeft, yTopLeft, xBottomRight, yBottomRight) 
+
+    xTopLeft = max(xTopLeft, minWidth)
+    yTopLeft = max(yTopLeft, minHeight)
+    
+    xBottomRight = min(xBottomRight, maxWidth)
+    yBottomRight = min(yBottomRight, maxHeight)
+
+    logger.debug('Revised coordinates: (%s, %s), (%s, %s)', xTopLeft, yTopLeft, xBottomRight, yBottomRight) 
+
+    return ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
+
+def randomly_sample_point_within_rectangle_assuming_center_point_to_affix_foreground_image(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates, pil_image_bg, pil_image_fg):
+    backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates = correct_bounding_box_coordinates_assuming_center_point_to_affix_foreground_image(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates, pil_image_bg, pil_image_fg)
+    return randomly_sample_point_within_rectangle(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates)
 
 def randomly_sample_point_within_rectangle(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates):
     logger = logging.getLogger(__name__)
