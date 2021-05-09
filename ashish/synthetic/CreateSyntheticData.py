@@ -20,22 +20,41 @@ import Startup
 from PIL import Image, ImageOps
 from pathlib import Path
 
-def randomly_sample_new_image_size(image_size):
-    (width, height) = image_size
+def randomly_sample_new_image_size(fg_image_size, bg_image_size):
+    logger = logging.getLogger(__name__)
+
+    (fg_width, fg_height) = fg_image_size
+    (bg_width, bg_height) = bg_image_size
+
+    logger.debug('fg_size: (%i, %i)', fg_width, fg_height) 
+    logger.debug('bg_size: (%i, %i)', bg_width, bg_height) 
 
     low = 0.80 # TODO: Move to config
     high = 2.8 # TODO: Move to config
+
+    # We are working with wide images. Therefore, worrying about the height is sufficient.
+    min_height = math.floor(0.10*bg_height)
+    max_height = math.floor(0.60*bg_height)
+
+    low = min_height*1.0/fg_height
+    high = max_height*1.0/fg_height
+
+    logger.debug('min_height: %i, max_height: %i, low: %f, high: %f', min_height, max_height, low, high) 
+
+    # We preserve the aspect ratio for the foreground image. Therefore, scale remains the same across width and height 
     scale = random.uniform(low, high) # [low, high]
     
-    scaled_width = int(scale * width)
-    scaled_height = int(scale * height)
+    scaled_fg_width = int(scale * fg_width)
+    scaled_fg_height = int(scale * fg_height)
 
-    return (scaled_width, scaled_height)
+    logger.debug('scale: %f, scaled_fg_size: (%i, %i)', scale, scaled_fg_width, scaled_fg_height) 
 
-def resize_image_randomly(pil_image_original):
+    return (scaled_fg_width, scaled_fg_height)
+
+def resize_image_randomly(pil_image_original, pil_image_background):
     logger = logging.getLogger(__name__)
 
-    new_size = randomly_sample_new_image_size(pil_image_original.size)
+    new_size = randomly_sample_new_image_size(pil_image_original.size, pil_image_background.size)
     pil_image_resized = ImageOps.fit(pil_image_original, new_size, Image.ANTIALIAS)
 
     head, tail = ntpath.split(pil_image_original.filename)
@@ -486,7 +505,7 @@ def process_original_occlusion_image(path_occlusion_image, path_background_image
 
     for i in range(num_runs_per_original_image): 
         logger.debug('For occlusion %s, image %s, run %d of %d', occlusion_name, occlusion_image_filename, i+1, num_runs_per_original_image) 
-        occlusion_image_resized = resize_image_randomly(occlusion_image) # specify the gaussian and standard deviation
+        occlusion_image_resized = resize_image_randomly(occlusion_image, background_image) # specify the gaussian and standard deviation
         # TODO: pass corresponding annotations file
         (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(occlusion_image_resized, occlusion_name, target_dir_path_images, background_image, background_annotation, path_background_image, threshold, cur_image_id, target_dir_path_annotations, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest)
         image_info_collection.append(image_info)
@@ -535,7 +554,9 @@ def create_synthetic_images_for_all_images_under_current_folders(background_dir_
         logger.warn("No background images found")
 
     for foreground_image_path in foreground_image_paths:
+        logger.debug('Processing foreground image: %s', foreground_image_path)
         for background_image_path in background_image_paths:
+            logger.debug('Processing background image: %s', background_image_path)
             background_annotation_file_path = get_background_annotation_file_path(background_image_path, background_dir_path_annotations)
             (image_annotation_collection, image_info_collection, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, background_annotation_file_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest) 
 
