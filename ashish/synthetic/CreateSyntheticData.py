@@ -508,13 +508,14 @@ def create_synthetic_images_for_all_images_under_current_folders(background_dir_
     logger.info('create_synthetic_images - background images: %s, background annotations: %s, foreground: %s, image output: %s, annotations output: %s', background_dir_path_images, background_dir_path_annotations, path_foreground_dir, target_dir_path_images, target_dir_path_annotations)
 
     # TODO: Move to config
-    foregound_valid_extensions = ["jpg", "jpeg", "JPEG", "JPG"] # image masking code doesn't work well with PNGs
+    foregound_valid_extensions = ["jpg", "jpeg", "JPEG", "JPG", "png", "PNG"] # image masking code doesn't work well with PNGs
 
     foreground_image_paths = []
     for valid_extension in foregound_valid_extensions:
         foreground_search_path = path_foreground_dir + "/" + "*." + valid_extension
         for file_path in glob.glob(foreground_search_path):
             foreground_image_paths.append(file_path)
+            logger.debug("Found foreground image at: %s", file_path)
 
     # TODO: Move to config
     background_valid_extensions = ["jpg", "jpeg", "JPEG", "JPG", "png", "PNG"]
@@ -526,6 +527,12 @@ def create_synthetic_images_for_all_images_under_current_folders(background_dir_
 
     image_info_collection = []
     image_annotation_collection = []
+
+    if len(foreground_image_paths) == 0:
+        logger.warn("No foreground images found")
+
+    if len(background_image_paths) == 0:
+        logger.warn("No background images found")
 
     for foreground_image_path in foreground_image_paths:
         for background_image_path in background_image_paths:

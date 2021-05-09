@@ -1,3 +1,6 @@
+import logging
+import logging.config
+
 import numpy as np
 import skimage
 import cv2
@@ -8,6 +11,41 @@ from skimage.segmentation import clear_border
 from scipy import ndimage as ndi
 
 def create_grayscale_image_mask(image, threshold):
+    logger = logging.getLogger(__name__)
+    if (is_transparent(image)):
+        logger.debug('Invoking transparent mask generation')
+        return create_grayscale_image_mask_transparent(image)
+    else:
+        logger.debug('Invoking regular mask generation')
+        return create_grayscale_image_mask_regular(image, threshold)
+
+def create_grayscale_image_mask_empty(pil_image):
+    return np.zeros(pil_image.size, dtype='uint8')
+
+def create_grayscale_image_mask_transparent(pil_image):
+    logger = logging.getLogger(__name__)
+
+    # Don't use the regular approach to convert pil image to open cv image because
+    # we lose the alpha channel in the process. We are not interested in R,G,B here.
+    # Therefore, their relative ordering doesn't matter anyway.
+    #
+    # Optionally, you can also use the following but it is not necessary. 
+    # opencv_image = np.array(pil_image)
+    # opencv_image = cv2.cvtColor(opencv_image, cv2.COLOR_RGBA2BGRA)
+    image = np.array(pil_image)
+    (r,g,b,a) = cv2.split(image)
+
+    if a.dtype != 'uint8': 
+        logger.error('alpha channel dtype should be uint8 but is %s', a.dtype)
+        return create_grayscale_image_mask_empty(pil_image)
+
+    if np.max(a) != 255:
+        logger.warn('Maximum value should have been equal to 255. Value is %i', np.max(a))
+
+    image_mask = Image.fromarray(a) 
+    return image_mask
+
+def create_grayscale_image_mask_regular(image, threshold):
     """
     There are several approaches to creating a mask based on thresholding.
     1) Convert to '1' or binary image. However, in practice, this does not work well.
@@ -17,6 +55,11 @@ def create_grayscale_image_mask(image, threshold):
     Approach 2 can give false positives as the grayscale value might have a high pixel value.
     Therefore, convering on approach 3.
     """
+    logger = logging.getLogger(__name__)
+
+    if image.mode == "RBGA":
+        logger.error("Regular mask creator can only handle images with three channels but received image with mode RGBA")
+        return create_grayscale_image_mask_empty(pil_image)
 
     # Pillow (PIL) accepts a mask in the image format. Mode 'L' or grayscale works best. '1' or binary mode has a few bugs
     # as per documentation online last updated in 2018.
@@ -29,6 +72,16 @@ def create_grayscale_image_mask(image, threshold):
     image_mask = convert_binary_mask_to_grayscale_image(binary_mask)
 
     return image_mask
+
+def is_transparent(image):
+    if image.mode == "RGB":
+        return False 
+    elif image.mode == "RGBA":
+        extrema = image.getextrema()
+        if extrema[3][0] < 255:
+            return True
+    else:
+        return False
 
 def convert_binary_mask_to_grayscale_image(binary_mask):
     mask = binary_mask.astype('uint8') # view('uint8') might be more efficient as it does not make an additional copy
