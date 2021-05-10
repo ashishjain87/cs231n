@@ -81,11 +81,11 @@ from util import *
 import shutil
 import glob
 import random
+from datetime import datetime
 
-
-AUG_DIR = os.path.join(os.path.dirname(__file__), './augmented20/') # Augmented data
-ORIG_DIR = os.path.join(os.path.dirname(__file__), './first20/') # Original data
-INTERMEDIATE_DIR = os.path.join(os.path.dirname(__file__), './intermediate_data/')
+AUG_DIR = os.path.join(os.path.dirname(__file__), '../ashish/synthetic/output/') # Augmented data
+ORIG_DIR = os.path.join(os.path.dirname(__file__), '../original_data_val/') # Original data
+INTERMEDIATE_DIR = os.path.join(os.path.dirname(__file__), '../intermediate_data/')
 
 def make_orig_dirs(intermediate_dir):
     for data_type in ['images', 'labels']:
@@ -107,8 +107,11 @@ def copy_orig(orig_data_dir=ORIG_DIR, intermediate_dir=INTERMEDIATE_DIR):
 
     if '.DS_Store' in orig_labels:
         orig_labels.remove('.DS_Store')
-
+    
+    print("Starting original images")
+    img_count = 0
     for split in orig_images:
+        print(f"[{datetime.now()}] Starting {split}")
         orig_images_split_path = orig_images_path + split + '/'
         orig_labels_split_path = orig_labels_path + split + '/'
         
@@ -124,14 +127,20 @@ def copy_orig(orig_data_dir=ORIG_DIR, intermediate_dir=INTERMEDIATE_DIR):
             d_label = os.path.join(intermediate_dir, "labels/" + split + "/orig/")
             shutil.copy2(s_label, d_label)
 
+            img_count += 1
+            if img_count % 100 == 0:
+                print(f"Finished {img_count} images")
+    print("Finishes original images")
 
 def copy_aug(aug_data_dir_path=AUG_DIR, intermediate_dir=INTERMEDIATE_DIR):
     splits = os.listdir(aug_data_dir_path)
     if '.DS_Store' in splits:
         splits.remove('.DS_Store')
 
-
+    img_count = 0
+    print("Starting to copy augmented images")
     for split in splits:
+        print(f"[{datetime.now()}] Starting {split}")
         split_path = aug_data_dir_path + split + '/'
         occlusion_classes = os.listdir(split_path)
         if '.DS_Store' in occlusion_classes:
@@ -157,13 +166,18 @@ def copy_aug(aug_data_dir_path=AUG_DIR, intermediate_dir=INTERMEDIATE_DIR):
 
                 # Copy label
                 image_name, _ = get_filename_and_extension(image_filename)
-                s_label = os.path.join(labels_dir_path, image_name + '.txt')
+                image_id, occlusion_id = tuple(image_name.split('.'))
+                s_label = os.path.join(labels_dir_path, image_id + '.annotated.' + occlusion_id + '.txt')
                 d_label_dir = os.path.join(intermediate_dir, "labels/" + split + '/aug/' + occlusion_class + '/')
                 if not os.path.exists(d_label_dir):
                     os.makedirs(d_label_dir)
-                d_label = os.path.join(d_label_dir, image_name + '.txt')
+                d_label = os.path.join(d_label_dir, image_id + '.annotated.' + occlusion_id + '.txt')
                 shutil.copy2(s_label, d_label)
-
+            
+                img_count += 1
+                if img_count % 100 == 0:
+                    print(f"Finished {img_count} images")
+    print("Finished augmented images")
 
 if __name__ == "__main__":
     # Create output dirs
