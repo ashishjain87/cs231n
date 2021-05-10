@@ -8,6 +8,7 @@ import time
 import pickle 
 from constants import *
 from args import get_train_test_args
+from pathlib import Path
 
 def store_pickle(pickle_filename, data):
     pickle_file = open(pickle_filename, 'ab')
@@ -30,6 +31,16 @@ def get_id_from_filename(dir_entry_filename):
 
 def get_filename_from_name(dir_name, image_name="000001", extension=".txt"):
     return os.path.join(os.path.dirname(__file__), dir_name + image_name + extension)
+
+
+def get_filename_without_ext(path):
+    filename_with_ext = os.path.basename(path)
+    list = os.path.splitext(filename_with_ext)
+    return list[0]
+
+def get_filename_and_extension(path): 
+    path = Path(path)
+    return (path.stem, path.suffix)
 
 def yolo_to_kitti(annotation):
     x, y, width, height = annotation[1], annotation[2], annotation[3], annotation[4]
@@ -92,6 +103,31 @@ def show_bbox_tl_br(image_path, top_left_coords, bottom_right_coords):
 
     plt.show()
 
+
+def get_top_left_bottom_right_coordinates(background_annotations, index):
+    annotation = background_annotations[index]
+    (xTopLeft, yTopLeft, width, height) = yolo_to_kitti(annotation)
+    xBottomRight = xTopLeft + width
+    yBottomRight = yTopLeft + height
+    return ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
+
+
+def show_bboxes(image_path, label):
+    image = np.array(plt.imread(image_path))
+    # image = image[:IMG_HEIGHT, :IMG_WIDTH, :]
+    
+    fig, ax = plt.subplots()
+    ax.imshow(image)
+    for idx, annotation in enumerate(label):
+        ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight)) = get_top_left_bottom_right_coordinates(label, idx)
+        width = xBottomRight - xTopLeft
+        height = yBottomRight - yTopLeft
+        rect = patches.Rectangle((xTopLeft, yTopLeft), width, height, linewidth=1, edgecolor='r', facecolor='none', label='LABEL')
+        ax.add_patch(rect)
+
+    plt.show()
+
+
 def crop_images(rel_data_dir=TRAIN_DIR, extension=".png", height=IMG_HEIGHT, width=IMG_WIDTH):
     data_dir = os.path.join(os.path.dirname(__file__), rel_data_dir)
     for idx, image_file in enumerate(os.scandir(data_dir)):
@@ -103,6 +139,7 @@ def crop_images(rel_data_dir=TRAIN_DIR, extension=".png", height=IMG_HEIGHT, wid
         image = np.array(plt.imread(image_filename))
         image = image[:IMG_HEIGHT, :IMG_WIDTH, :]
         plt.imsave(image_filename, image)
+
 
 def clean_kitti(kitti_label):
     kitti_label = np.array(kitti_label)
@@ -133,5 +170,4 @@ if __name__ == "__main__":
     # show_bbox_yolo(yolo_label, image_name)
 
     # CROP IMAGES
-    # crop_images("../data_object_image/training/first20/images/")
-    pass
+    crop_images("./augmented20/images/")
