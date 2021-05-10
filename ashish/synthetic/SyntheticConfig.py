@@ -13,12 +13,17 @@ class SyntheticConfig:
         config = confuse.Configuration('CreateSyntheticData')
 
         self.path_foreground_dir = str(config['pathForegroundDir'])
+        self.path_foreground_super_dir = str(config['pathForegroundSuperDir'])
 
         #TODO: Add support for reading images and labels for background images
         self.path_background_dir = str(config['background']['pathBackgroundDir'])
+
         background_images_dir_name = str(config['background']['imagesDirName'])
+        self.images_dir_name = background_images_dir_name
         self.background_dir_path_images = os.path.join(self.path_background_dir, background_images_dir_name)
+
         background_annotations_dir_name = str(config['background']['annotationsDirName'])
+        self.annotations_dir_name = background_annotations_dir_name
         self.background_dir_path_annotations = os.path.join(self.path_background_dir, background_annotations_dir_name)
 
         self.threshold = int(str(config['threshold']))
@@ -40,10 +45,14 @@ class SyntheticConfig:
         logger = logging.getLogger(__name__)
 
         logger.info('pathForegroundDir %s', self.path_foreground_dir)
+        logger.info('pathForegroundSuperDir %s', self.path_foreground_super_dir)
 
         logger.info('pathBackgroundDir %s', self.path_background_dir)
         logger.info('background images dir path %s', self.background_dir_path_images)
         logger.info('background annotations dir path %s', self.background_dir_path_annotations)
+
+        logger.info('imagesDirName %s', self.images_dir_name)
+        logger.info('annotationsDirName %s', self.annotations_dir_name)
 
         logger.info('threshold %s', self.threshold)
         logger.info('start image id %s', self.cur_image_id)

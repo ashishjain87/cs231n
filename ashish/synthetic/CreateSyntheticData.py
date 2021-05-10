@@ -517,11 +517,11 @@ def create_synthetic_images_for_all_images_under_current_folders(background_dir_
     logger = logging.getLogger(__name__)
 
     if not os.path.isdir(target_dir_path_images):
-        os.mkdir(target_dir_path_images)
+        os.makedirs(target_dir_path_images)
         logger.info('Created target directory %s', target_dir_path_images)
 
     if not os.path.isdir(target_dir_path_annotations):
-        os.mkdir(target_dir_path_annotations)
+        os.makedirs(target_dir_path_annotations)
         logger.info('Created target directory %s', target_dir_path_annotations)
 
     logger.info('create_synthetic_images - background images: %s, background annotations: %s, foreground: %s, image output: %s, annotations output: %s', background_dir_path_images, background_dir_path_annotations, path_foreground_dir, target_dir_path_images, target_dir_path_annotations)
@@ -558,7 +558,51 @@ def create_synthetic_images_for_all_images_under_current_folders(background_dir_
         for background_image_path in background_image_paths:
             logger.debug('Processing background image: %s', background_image_path)
             background_annotation_file_path = get_background_annotation_file_path(background_image_path, background_dir_path_annotations)
-            (image_annotation_collection, image_info_collection, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, background_annotation_file_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest) 
+            (image_annotations, image_infos, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, background_annotation_file_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest) 
+
+            image_annotation_collection.append(image_annotations)
+            image_info_collection.append(image_infos)
+
+    return (image_annotation_collection, image_info_collection, cur_image_id)
+
+def create_synthetic_images_for_all_direct_subfolders(syntheticConfig, occlusion_name_occlusion_id_dict):
+    logger = logging.getLogger(__name__)
+
+    image_annotation_collection = []
+    image_info_collection = []
+    cur_image_id = syntheticConfig.cur_image_id
+
+    subdirs = get_immediate_subdirectories(syntheticConfig.path_foreground_super_dir)
+    for subdir in subdirs:
+        logger.info("Processing %s", subdir)
+        path_foreground_dir = os.path.join(syntheticConfig.path_foreground_super_dir, subdir)
+        target_dir_path_images = os.path.join(syntheticConfig.target_dir, subdir, syntheticConfig.images_dir_name)
+        target_dir_path_annotations = os.path.join(syntheticConfig.target_dir, subdir, syntheticConfig.annotations_dir_name)
+
+        logger.debug('path_foreground_dir: %s', path_foreground_dir)
+        logger.debug('target_dir_path_images: %s', target_dir_path_images)
+        logger.debug('target_dir_path_annotations: %s', target_dir_path_annotations)
+
+        (image_annotations, image_infos, cur_image_id) = create_synthetic_images_for_all_images_under_current_folders( \
+                syntheticConfig.background_dir_path_images, \
+                syntheticConfig.background_dir_path_annotations, \
+                path_foreground_dir, \
+                syntheticConfig.threshold, \
+                target_dir_path_images, \
+                target_dir_path_annotations, \
+                cur_image_id, \
+                occlusion_name_occlusion_id_dict, \
+                syntheticConfig.probability_prioritize_objects_of_interest)
+
+        logger.info('Subdirectory %s processed', subdir)
+        logger.info('Number of images created for %s is %s', subdir, len(image_infos))
+        logger.info('Number of annotations created for %s is %s', subdir, len(image_annotations))
+
+        image_annotation_collection.append(image_annotations)
+        image_info_collection.append(image_infos)
+
+    logger.info('Total number of images created is %s', len(image_info_collection))
+    logger.info('Total number of annotations created is %s', len(image_annotation_collection))
 
 def main():
     startup = Startup.Startup()
@@ -572,7 +616,8 @@ def main():
 
     #process_original_occlusion_image(path_foreground_file, path_background_file, threshold, target_dir, cur_image_id, occlusion_name) 
     # TODO: pass background annotations directory
-    create_synthetic_images_for_all_images_under_current_folders(syntheticConfig.background_dir_path_images, syntheticConfig.background_dir_path_annotations, syntheticConfig.path_foreground_dir, syntheticConfig.threshold, syntheticConfig.target_dir_path_images, syntheticConfig.target_dir_path_annotations, syntheticConfig.cur_image_id, startup.occlusion_name_occlusion_id_dict, syntheticConfig.probability_prioritize_objects_of_interest)
+    #create_synthetic_images_for_all_images_under_current_folders(syntheticConfig.background_dir_path_images, syntheticConfig.background_dir_path_annotations, syntheticConfig.path_foreground_dir, syntheticConfig.threshold, syntheticConfig.target_dir_path_images, syntheticConfig.target_dir_path_annotations, syntheticConfig.cur_image_id, startup.occlusion_name_occlusion_id_dict, syntheticConfig.probability_prioritize_objects_of_interest)
+    create_synthetic_images_for_all_direct_subfolders(syntheticConfig, startup.occlusion_name_occlusion_id_dict)
 
     logger.info('Finished')
 
