@@ -68,6 +68,8 @@ def resize_image_randomly(pil_image_original, pil_image_background):
     return pil_image_resized
 
 def randomly_sample_point_within_image(pil_image_bg, pil_image_fg):
+    logger = logging.getLogger(__name__)
+
     (backgroundWidth, backgroundHeight) = pil_image_bg.size
     (foregroundWidth, foregroundHeight) = pil_image_fg.size
 
