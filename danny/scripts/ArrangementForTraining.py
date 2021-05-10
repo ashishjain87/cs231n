@@ -4,6 +4,7 @@ from typing import List, Dict, Tuple
 from collections import defaultdict
 import random
 from tqdm import tqdm
+import argparse
 
 FILE_EXTENSION = "png"
 AUG_REGEX = "(\d+)\..*\." + FILE_EXTENSION
@@ -104,6 +105,13 @@ def populate_out_dir(chosen_images: Dict[str, List[Tuple[str, str]]], path_to_to
             copy_image(f"{path_to_containing_dir}/{filename}", filename, out_dir_set_name, out_dir_top_level_path)
 
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--in-root', type=str, help="top-level dir where input data is stored")
+    parser.add_argument('--out-root', type=str, help="top-level dir where output data should be stored")
+    return parser.parse_args()
+
+
 def collect_images_into_final_sets(path_to_top_level_input_dir: str, path_to_top_level_output_dir: str):
     # As a user of this, consider setting a random seed
     # random.seed(42)
@@ -121,6 +129,7 @@ def collect_images_into_final_sets(path_to_top_level_input_dir: str, path_to_top
 
 
 if __name__ == "__main__":
-    in_path = "/Users/schwartzd/dev/classes/cs231n/project/intermediate_data"
-    out_path = "/Users/schwartzd/dev/classes/cs231n/project/processed_data"
+    args = get_args()
+    in_path = args.in_root
+    out_path = args.out_root
     collect_images_into_final_sets(in_path, out_path)
