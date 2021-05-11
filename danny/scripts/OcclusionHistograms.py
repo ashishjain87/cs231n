@@ -110,7 +110,7 @@ def profile_dataset(images: List[List[YoloLabel]], hist_out_dir: str, severity_b
 
     plt.figure(figsize=(12,7))
     occlusions_by_class = np.array([occluded_by_class[i] for i in range(len(CLASS_MAP) - 1)])
-    nonocclusions_by_class = np.array([occluded_by_class[i] for i in range(len(CLASS_MAP) - 1)])
+    nonocclusions_by_class = np.array([unoccluded_by_class[i] for i in range(len(CLASS_MAP) - 1)])
     total_class_occurrence = occlusions_by_class + nonocclusions_by_class
     occlusion_ratio_by_class = occlusions_by_class/total_class_occurrence
     occlusion_ratio_by_class = np.where(total_class_occurrence != 0, occlusion_ratio_by_class, 0)
@@ -120,6 +120,13 @@ def profile_dataset(images: List[List[YoloLabel]], hist_out_dir: str, severity_b
     plt.ylabel("fraction of object instances that are occluded or occluding something else")
     plt.title("Proportion of objects that are undisturbed (by class)")
     plt.savefig(f"{hist_out_dir}/disturbances.png")
+
+    plt.figure(figsize=(12,7))
+    plt.bar(x=3 * np.arange(len(CLASS_MAP) - 1), tick_label=classes, height=total_class_occurrence, linewidth=6)
+    plt.xlabel("class name")
+    plt.ylabel("number of instances of object type in dataset")
+    plt.title("Object population")
+    plt.savefig(f"{hist_out_dir}/object_population.png")
 
     plt.figure()
     plt.hist(num_occlusions_by_image, bins=(max(num_occlusions_by_image) + 1))
