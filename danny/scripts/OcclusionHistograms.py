@@ -4,6 +4,7 @@ import os
 import argparse
 import numpy as np
 from seaborn import heatmap
+from collections import defaultdict
 
 CLASS_MAP = {0: 'car', 1: 'van', 2: 'truck', 3: 'pedestrian', 4: 'person sitting', 5: 'cyclist', 6: 'tram', 7: 'misc', 8: 'dontcare'}
 
@@ -82,9 +83,12 @@ def load_labels(path_to_labels: str) -> List[List[YoloLabel]]:
 def profile_dataset(images: List[List[YoloLabel]], hist_out_dir: str, severity_bins: int, heatmap_iou_threshold: float):
     num_occlusions_by_image = []
     occlusions = []  # each entry is of the form (iou, YoloLabel a, YoloLabel b)
+    unoccluded_by_class = defaultdict(lambda: 0)  # relative to heatmap iou threshold
+    occluded_by_class = defaultdict(lambda: 0)  # relative to heatmap iou threshold
 
     for image in images:
         num_occlusions = 0
+        occluded_indices = set()
         for i in range(len(image)):
             a = image[i]
             for j in range(i+1, len(image)):
@@ -92,8 +96,30 @@ def profile_dataset(images: List[List[YoloLabel]], hist_out_dir: str, severity_b
                 occlusion, iou = overlap(a, b)
                 if occlusion:
                     occlusions.append((iou, a, b))
+                    if iou >= heatmap_iou_threshold:
+                        occluded_indices.add(i)
+                        occluded_indices.add(j)
                     num_occlusions += 1
+        for i in range(len(image)):
+            category = image[i].category
+            if i not in occluded_indices:
+                unoccluded_by_class[category] += 1
+            else:
+                occluded_by_class[category] += 1
         num_occlusions_by_image.append(num_occlusions)
+
+    plt.figure(figsize=(12,7))
+    occlusions_by_class = np.array([occluded_by_class[i] for i in range(len(CLASS_MAP) - 1)])
+    nonocclusions_by_class = np.array([occluded_by_class[i] for i in range(len(CLASS_MAP) - 1)])
+    total_class_occurrence = occlusions_by_class + nonocclusions_by_class
+    occlusion_ratio_by_class = occlusions_by_class/total_class_occurrence
+    occlusion_ratio_by_class = np.where(total_class_occurrence != 0, occlusion_ratio_by_class, 0)
+    classes = [CLASS_MAP[i] for i in range(len(CLASS_MAP) - 1)]
+    plt.bar(x=3*np.arange(len(CLASS_MAP) - 1), tick_label=classes, height=occlusion_ratio_by_class, linewidth=6)
+    plt.xlabel("class name")
+    plt.ylabel("fraction of object instances that are occluded or occluding something else")
+    plt.title("Proportion of objects that are undisturbed (by class)")
+    plt.savefig(f"{hist_out_dir}/disturbances.png")
 
     plt.figure()
     plt.hist(num_occlusions_by_image, bins=(max(num_occlusions_by_image) + 1))
@@ -138,6 +164,7 @@ def create_occlusion_heatmap(occlusions: List[Tuple[float, YoloLabel, YoloLabel]
 
     # normalize by number of 'interesting' occlusions
     mtx /= num_above_threshold
+    mtx = np.round(mtx, decimals=3)
 
     class_names = [idx_to_classname[i] for i in range(num_classes)]
 
@@ -151,10 +178,14 @@ def create_occlusion_heatmap(occlusions: List[Tuple[float, YoloLabel, YoloLabel]
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path-to-label-files', type=str, help="path to a directory containing label files")
-    parser.add_argument('--hist-out-dir', type=str, help="path to a directory where generated histograms should be saved")
-    parser.add_argument('--severity-bins', type=int, default=16, help="number of bins for the occlusion severity histogram")
-    parser.add_argument('--heatmap_iou_threshold', type=float, default=0., help="minimum IoU score for an occlusion to be included in the generated heatmap")
+    parser.add_argument('--path-to-label-files', type=str,
+                        help="path to a directory containing label files")
+    parser.add_argument('--hist-out-dir', type=str,
+                        help="path to a directory where generated histograms should be saved")
+    parser.add_argument('--severity-bins', type=int, default=16,
+                        help="number of bins for the occlusion severity histogram")
+    parser.add_argument('--heatmap_iou_threshold', type=float, default=0.,
+                        help="minimum IoU score for an occlusion to be included in the generated heatmap")
     return parser.parse_args()
 
 
@@ -162,4 +193,5 @@ if __name__ == "__main__":
     args = get_args()
     image_labels = load_labels(args.path_to_label_files)
     profile_dataset(image_labels, args.hist_out_dir, args.severity_bins, args.heatmap_iou_threshold)
+
 
