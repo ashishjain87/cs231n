@@ -333,7 +333,7 @@ def get_top_left_point(centerPoint, pil_occlusion_image):
 
     return (xTopLeft, yTopLeft)
 
-def create_synthetic_image(background_image, background_annotation, occlusion_image, threshold, probability_prioritize_objects_of_interest):
+def create_synthetic_image_randomly(background_image, background_annotation, occlusion_image, threshold, probability_prioritize_objects_of_interest):
     logger = logging.getLogger(__name__)
 
     # TODO: call the high level method which chooses between whole image versus object of interest
@@ -348,6 +348,21 @@ def create_synthetic_image(background_image, background_annotation, occlusion_im
     
     synthetic_image, original_occlusion_image_grayscale_image_mask = create_synthetic_image_point(background_image, occlusion_image, topLeftPoint, threshold)
     return synthetic_image, topLeftPoint, original_occlusion_image_grayscale_image_mask 
+
+
+def create_synthetic_image(background_image, occlusion_image, threshold, center_point):
+    logger = logging.getLogger(__name__)
+
+    (x0, y0) = center_point
+    logger.debug('Sampled point within background image is (%s,%s) which is the center point', x0, y0)
+
+    topLeftPoint = get_top_left_point(center_point, occlusion_image)
+    (x0, y0) = topLeftPoint 
+    logger.debug('Sampled point within background image is (%s,%s) which is the top left point', x0, y0)
+    
+    synthetic_image, original_occlusion_image_grayscale_image_mask = create_synthetic_image_point(background_image, occlusion_image, topLeftPoint, threshold)
+    return synthetic_image, topLeftPoint, original_occlusion_image_grayscale_image_mask 
+
 
 def compute_target_path(target_dir, path_background_image, cur_image_id):
     # Compute target path
@@ -379,7 +394,7 @@ def process_resized_occlusion_image(
     cur_image_id,
     target_annotations_dir,
     occlusion_name_occlusion_id_dict,
-    probability_prioritize_objects_of_interest,
+    center_point,
 ):
     logger = logging.getLogger(__name__)
 
@@ -388,11 +403,11 @@ def process_resized_occlusion_image(
     # synthetic image generation and save
     (synthetic_image, point, original_occlusion_image_grayscale_image_mask) = create_synthetic_image(
         background_image,
-        background_annotation,
         occlusion_image,
         threshold,
-        probability_prioritize_objects_of_interest,
+        center_point
     )
+
     save_synthetic_image(
         background_image,
         synthetic_image,
@@ -475,7 +490,7 @@ def process_original_occlusion_image(
             cur_image_id,
             target_dir_path_annotations,
             occlusion_name_occlusion_id_dict,
-            probability_prioritize_objects_of_interest,
+            center_point,
         )
         image_info_collection.append(image_info)
         image_annotation_collection.append(image_annotation)
