@@ -16,6 +16,9 @@ import sys
 import yaml
 import SyntheticConfig as synthetic_config
 import Startup
+
+from Rotator import Rotator
+from NoOpRotator import NoOpRotator
 from ImagePath import *
 from Annotation import *
 
@@ -328,7 +331,7 @@ def process_resized_occlusion_image(occlusion_image, occlusion_name, target_dir,
     (file_name, target_path) = compute_target_path(target_dir, path_background_image, cur_image_id)
 
     # synthetic image generation and save
-    synthetic_image, point, original_occlusion_image_grayscale_image_mask = create_synthetic_image(background_image, background_annotation, occlusion_image, threshold, probability_prioritize_objects_of_interest) # PHIL
+    synthetic_image, point, original_occlusion_image_grayscale_image_mask = create_synthetic_image(background_image, background_annotation, occlusion_image, threshold, probability_prioritize_objects_of_interest)
     save_synthetic_image(background_image, synthetic_image, occlusion_image, point, threshold, target_path)
 
     # image info
@@ -353,7 +356,7 @@ def process_original_occlusion_image(path_occlusion_image, path_background_image
     occlusion_name = get_immediate_parent_folder(path_occlusion_image) 
 
     background_image = Image.open(path_background_image)
-    background_annotation = read_background_annotation(background_annotations_file_path) # PHIL
+    background_annotation = read_background_annotation(background_annotations_file_path) # Integration with Phil 
 
     image_info_collection = []
     image_annotation_collection = []
