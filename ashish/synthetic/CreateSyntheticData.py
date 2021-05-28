@@ -325,71 +325,154 @@ def get_image_info(synthetic_image, file_name, image_id):
 
     return dict
 
-def process_resized_occlusion_image(occlusion_image, occlusion_name, target_dir, background_image, background_annotation, path_background_image, threshold, cur_image_id, target_annotations_dir, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest): 
+def process_resized_occlusion_image(
+    occlusion_image,
+    occlusion_name,
+    target_dir,
+    background_image,
+    background_annotation,
+    path_background_image,
+    threshold,
+    cur_image_id,
+    target_annotations_dir,
+    occlusion_name_occlusion_id_dict,
+    probability_prioritize_objects_of_interest,
+):
     logger = logging.getLogger(__name__)
 
     (file_name, target_path) = compute_target_path(target_dir, path_background_image, cur_image_id)
 
     # synthetic image generation and save
-    synthetic_image, point, original_occlusion_image_grayscale_image_mask = create_synthetic_image(background_image, background_annotation, occlusion_image, threshold, probability_prioritize_objects_of_interest)
-    save_synthetic_image(background_image, synthetic_image, occlusion_image, point, threshold, target_path)
+    (synthetic_image, point, original_occlusion_image_grayscale_image_mask) = create_synthetic_image(
+        background_image,
+        background_annotation,
+        occlusion_image,
+        threshold,
+        probability_prioritize_objects_of_interest,
+    )
+    save_synthetic_image(
+        background_image,
+        synthetic_image,
+        occlusion_image,
+        point,
+        threshold,
+        target_path,
+    )
 
     # image info
     image_info = get_image_info(synthetic_image, file_name, cur_image_id)
 
     # Generate annotation and save
-    image_annotation = compute_annotation(background_image, synthetic_image, occlusion_image, point, original_occlusion_image_grayscale_image_mask)
-    # TODO: Add support for taking a mapping dictionary which takes as input the name of the occlusion and has a mapping to the integer label for the same.
-    save_image_annotation(path_background_image, image_annotation, target_annotations_dir, cur_image_id, occlusion_name_occlusion_id_dict, occlusion_name)
+    image_annotation = compute_annotation(
+        background_image,
+        synthetic_image,
+        occlusion_image,
+        point,
+        original_occlusion_image_grayscale_image_mask,
+    )
+    save_image_annotation(
+        path_background_image,
+        image_annotation,
+        target_annotations_dir,
+        cur_image_id,
+        occlusion_name_occlusion_id_dict,
+        occlusion_name,
+    )
 
-    logger.debug('image_info, annotation created for %s', image_info['file_name'])
+    logger.debug("image_info, annotation created for %s", image_info["file_name"])
 
     cur_image_id += 1
 
     return (image_annotation, image_info, cur_image_id)
 
-def process_original_occlusion_image(path_occlusion_image, path_background_image, background_annotations_file_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest): 
+def process_original_occlusion_image(
+    path_occlusion_image,
+    path_background_image,
+    background_annotations_file_path,
+    threshold,
+    target_dir_path_images,
+    target_dir_path_annotations,
+    cur_image_id,
+    occlusion_name_occlusion_id_dict,
+    probability_prioritize_objects_of_interest,
+):
     logger = logging.getLogger(__name__)
 
     occlusion_image_filename = get_filename_without_ext(path_occlusion_image)
     occlusion_image = Image.open(path_occlusion_image)
-    occlusion_name = get_immediate_parent_folder(path_occlusion_image) 
+    occlusion_name = get_immediate_parent_folder(path_occlusion_image)
 
     background_image = Image.open(path_background_image)
-    background_annotation = read_background_annotation(background_annotations_file_path) # Integration with Phil 
+    background_annotation = read_background_annotation(background_annotations_file_path)  # Integration with Phil
 
     image_info_collection = []
     image_annotation_collection = []
 
-    num_runs_per_original_image = 1 # TODO: Move to config
+    num_runs_per_original_image = 1  # TODO: Move to config
 
     occlusion_name = get_immediate_parent_folder(path_occlusion_image)
 
-    for i in range(num_runs_per_original_image): 
-        logger.debug('For occlusion %s, image %s, run %d of %d', occlusion_name, occlusion_image_filename, i+1, num_runs_per_original_image) 
-        occlusion_image_resized = resize_image_randomly(occlusion_image, background_image) # specify the gaussian and standard deviation
+    for i in range(num_runs_per_original_image):
+        logger.debug("For occlusion %s, image %s, run %d of %d", occlusion_name, occlusion_image_filename, i + 1, num_runs_per_original_image)
+        occlusion_image_resized = resize_image_randomly(occlusion_image, background_image)  # specify the gaussian and standard deviation
         # TODO: pass corresponding annotations file
-        (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(occlusion_image_resized, occlusion_name, target_dir_path_images, background_image, background_annotation, path_background_image, threshold, cur_image_id, target_dir_path_annotations, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest)
+        (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(
+            occlusion_image_resized,
+            occlusion_name,
+            target_dir_path_images,
+            background_image,
+            background_annotation,
+            path_background_image,
+            threshold,
+            cur_image_id,
+            target_dir_path_annotations,
+            occlusion_name_occlusion_id_dict,
+            probability_prioritize_objects_of_interest,
+        )
         image_info_collection.append(image_info)
         image_annotation_collection.append(image_annotation)
 
     return (image_annotation_collection, image_info_collection, cur_image_id)
 
-def create_synthetic_images_for_all_images_under_current_folders(background_dir_path_images, background_dir_path_annotations, path_foreground_dir, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest):
+def create_synthetic_images_for_all_images_under_current_folders(
+    background_dir_path_images,
+    background_dir_path_annotations,
+    path_foreground_dir,
+    threshold,
+    target_dir_path_images,
+    target_dir_path_annotations,
+    cur_image_id,
+    occlusion_name_occlusion_id_dict,
+    probability_prioritize_objects_of_interest,
+):
     logger = logging.getLogger(__name__)
 
     if not os.path.isdir(target_dir_path_images):
         os.makedirs(target_dir_path_images)
-        logger.info('Created target directory %s', target_dir_path_images)
+        logger.info("Created target directory %s", target_dir_path_images)
 
     if not os.path.isdir(target_dir_path_annotations):
         os.makedirs(target_dir_path_annotations)
-        logger.info('Created target directory %s', target_dir_path_annotations)
+        logger.info("Created target directory %s", target_dir_path_annotations)
 
-    logger.info('create_synthetic_images - background images: %s, background annotations: %s, foreground: %s, image output: %s, annotations output: %s', background_dir_path_images, background_dir_path_annotations, path_foreground_dir, target_dir_path_images, target_dir_path_annotations)
+    logger.info(
+        "create_synthetic_images - background images: %s, background annotations: %s, foreground: %s, image output: %s, annotations output: %s",
+        background_dir_path_images,
+        background_dir_path_annotations,
+        path_foreground_dir,
+        target_dir_path_images,
+        target_dir_path_annotations,
+    )
 
     # TODO: Move to config
-    foregound_valid_extensions = ["jpg", "jpeg", "JPEG", "JPG", "png", "PNG"] # image masking code doesn't work well with PNGs
+    foregound_valid_extensions = [
+        "jpg",
+        "jpeg",
+        "JPEG",
+        "JPG",
+        "png",
+        "PNG",
+    ]  # image masking code doesn't work well with PNGs
 
     foreground_image_paths = []
     for valid_extension in foregound_valid_extensions:
@@ -402,7 +485,7 @@ def create_synthetic_images_for_all_images_under_current_folders(background_dir_
     background_valid_extensions = ["jpg", "jpeg", "JPEG", "JPG", "png", "PNG"]
     background_image_paths = []
     for valid_extension in background_valid_extensions:
-        background_search_path = background_dir_path_images + "/" + "*." + valid_extension
+        background_search_path = (background_dir_path_images + "/" + "*." + valid_extension)
         for file_path in glob.glob(background_search_path):
             background_image_paths.append(file_path)
 
@@ -416,11 +499,21 @@ def create_synthetic_images_for_all_images_under_current_folders(background_dir_
         logger.warn("No background images found")
 
     for foreground_image_path in foreground_image_paths:
-        logger.debug('Processing foreground image: %s', foreground_image_path)
+        logger.debug("Processing foreground image: %s", foreground_image_path)
         for background_image_path in background_image_paths:
-            logger.debug('Processing background image: %s', background_image_path)
+            logger.debug("Processing background image: %s", background_image_path)
             background_annotation_file_path = get_background_annotation_file_path(background_image_path, background_dir_path_annotations)
-            (image_annotations, image_infos, cur_image_id) = process_original_occlusion_image(foreground_image_path, background_image_path, background_annotation_file_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest) 
+            (image_annotations, image_infos, cur_image_id) = process_original_occlusion_image(
+                foreground_image_path,
+                background_image_path,
+                background_annotation_file_path,
+                threshold,
+                target_dir_path_images,
+                target_dir_path_annotations,
+                cur_image_id,
+                occlusion_name_occlusion_id_dict,
+                probability_prioritize_objects_of_interest,
+            )
 
             image_annotation_collection.append(image_annotations)
             image_info_collection.append(image_infos)
