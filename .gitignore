@@ -139,6 +139,15 @@ dmypy.json
 
 # Vim
 *.swp
+*.swo
 
-# IDE settings
-**/.idea
+# Python Logs
+debug.log.*
+info.log.*
+error.log.*
+warn.logdebug.*
+
+# Compressed Files
+*.tar.gz
+*.zip
+*.7z
