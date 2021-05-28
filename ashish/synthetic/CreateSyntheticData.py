@@ -19,6 +19,8 @@ import Startup
 
 from Rotator import Rotator
 from NoOpRotator import NoOpRotator
+from Affixer import Affixer
+from FixedAffixer import FixedAffixer
 from ImagePath import *
 from Annotation import *
 
@@ -56,10 +58,51 @@ def randomly_sample_new_image_size(fg_image_size, bg_image_size):
 
     return (scaled_fg_width, scaled_fg_height)
 
+
 def resize_image_randomly(pil_image_original, pil_image_background):
     logger = logging.getLogger(__name__)
 
     new_size = randomly_sample_new_image_size(pil_image_original.size, pil_image_background.size)
+    pil_image_resized = ImageOps.fit(pil_image_original, new_size, Image.ANTIALIAS)
+
+    head, tail = ntpath.split(pil_image_original.filename)
+    original_filename_with_extension = tail or ntpath.basename(head)
+    original_filename, file_extension = os.path.splitext(original_filename_with_extension)
+
+    (new_width, new_height) = new_size
+    pil_image_resized.filename = '%s_width_%d_height_%d%s' % (original_filename, new_width, new_height, file_extension)
+    logger.debug('From image %s created new image in memory with name %s', original_filename_with_extension, pil_image_resized.filename) 
+
+    return pil_image_resized
+
+
+def determine_new_image_size(fg_image_size, bg_image_size, resize_scale):
+    logger = logging.getLogger(__name__)
+
+    (fg_width, fg_height) = fg_image_size
+    (bg_width, bg_height) = bg_image_size
+
+    logger.debug('fg_size: (%i, %i)', fg_width, fg_height) 
+    logger.debug('bg_size: (%i, %i)', bg_width, bg_height) 
+    
+    scaled_fg_width = int(resize_scale * fg_width)
+    scaled_fg_height = int(resize_scale * fg_height)
+
+    if scaled_fg_height >= bg_height:
+        logger.error('scaled_fg_height is gte bg_height specifically %i is gte %i', scaled_fg_height, bg_height) 
+
+    if scaled_fg_width >= bg_width:
+        logger.error('scaled_fg_width is gte bg_width specifically %i is gte %i', scaled_fg_width, bg_width) 
+
+    logger.debug('scale: %f, scaled_fg_size: (%i, %i)', resize_scale, scaled_fg_width, scaled_fg_height) 
+
+    return (scaled_fg_width, scaled_fg_height)
+
+
+def resize_image(pil_image_original, pil_image_background, resize_scale):
+    logger = logging.getLogger(__name__)
+
+    new_size = determine_new_image_size(pil_image_original.size, pil_image_background.size, resize_scale)
     pil_image_resized = ImageOps.fit(pil_image_original, new_size, Image.ANTIALIAS)
 
     head, tail = ntpath.split(pil_image_original.filename)
@@ -412,9 +455,14 @@ def process_original_occlusion_image(
 
     occlusion_name = get_immediate_parent_folder(path_occlusion_image)
 
+    rotator: Rotator = NoOpRotator()
+    affixer: Affixer = FixedAffixer()
+
     for i in range(num_runs_per_original_image):
         logger.debug("For occlusion %s, image %s, run %d of %d", occlusion_name, occlusion_image_filename, i + 1, num_runs_per_original_image)
-        occlusion_image_resized = resize_image_randomly(occlusion_image, background_image)  # specify the gaussian and standard deviation
+        occlusion_image_rotated = rotator.rotate(occlusion_image) # Placeholder for later 
+        (center_point, resize_scale) = affixer.decide_where_and_scale(background_image, background_annotation, occlusion_image_rotated)
+        occlusion_image_resized = resize_image(occlusion_image_rotated, background_image, resize_scale)  # specify the gaussian and standard deviation
         # TODO: pass corresponding annotations file
         (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(
             occlusion_image_resized,
