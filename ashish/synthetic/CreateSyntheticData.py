@@ -310,6 +310,18 @@ def compute_target_path(target_dir, path_background_image, cur_image_id):
     target_path = os.path.join(target_dir, file_name)
     return (file_name, target_path)
 
+def get_image_info(synthetic_image, file_name, image_id):
+    (width, height) = synthetic_image.size
+
+    dict = {}
+    dict['file_name'] = file_name 
+    dict['license'] = 1 # hardcoded
+    dict['width'] = width 
+    dict['height'] = height 
+    dict['id'] = image_id 
+
+    return dict
+
 def process_resized_occlusion_image(occlusion_image, occlusion_name, target_dir, background_image, background_annotation, path_background_image, threshold, cur_image_id, target_annotations_dir, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest): 
     logger = logging.getLogger(__name__)
 
@@ -332,18 +344,6 @@ def process_resized_occlusion_image(occlusion_image, occlusion_name, target_dir,
     cur_image_id += 1
 
     return (image_annotation, image_info, cur_image_id)
-
-def get_image_info(synthetic_image, file_name, image_id):
-    (width, height) = synthetic_image.size
-
-    dict = {}
-    dict['file_name'] = file_name 
-    dict['license'] = 1 # hardcoded
-    dict['width'] = width 
-    dict['height'] = height 
-    dict['id'] = image_id 
-
-    return dict
 
 def process_original_occlusion_image(path_occlusion_image, path_background_image, background_annotations_file_path, threshold, target_dir_path_images, target_dir_path_annotations, cur_image_id, occlusion_name_occlusion_id_dict, probability_prioritize_objects_of_interest): 
     logger = logging.getLogger(__name__)
