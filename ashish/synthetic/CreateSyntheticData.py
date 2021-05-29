@@ -20,7 +20,7 @@ import Startup
 from Rotator import Rotator
 from NoOpRotator import NoOpRotator
 from Affixer import Affixer
-from FixedAffixer import FixedAffixer
+from OriginalAffixer import OriginalAffixer
 from ImagePath import *
 from Annotation import *
 
@@ -58,7 +58,6 @@ def randomly_sample_new_image_size(fg_image_size, bg_image_size):
 
     return (scaled_fg_width, scaled_fg_height)
 
-
 def resize_image_randomly(pil_image_original, pil_image_background):
     logger = logging.getLogger(__name__)
 
@@ -74,7 +73,6 @@ def resize_image_randomly(pil_image_original, pil_image_background):
     logger.debug('From image %s created new image in memory with name %s', original_filename_with_extension, pil_image_resized.filename) 
 
     return pil_image_resized
-
 
 def determine_new_image_size(fg_image_size, bg_image_size, resize_scale):
     logger = logging.getLogger(__name__)
@@ -98,7 +96,6 @@ def determine_new_image_size(fg_image_size, bg_image_size, resize_scale):
 
     return (scaled_fg_width, scaled_fg_height)
 
-
 def resize_image(pil_image_original, pil_image_background, resize_scale):
     logger = logging.getLogger(__name__)
 
@@ -114,128 +111,6 @@ def resize_image(pil_image_original, pil_image_background, resize_scale):
     logger.debug('From image %s created new image in memory with name %s', original_filename_with_extension, pil_image_resized.filename) 
 
     return pil_image_resized
-
-def randomly_sample_point_within_image(pil_image_bg, pil_image_fg):
-    logger = logging.getLogger(__name__)
-
-    (backgroundWidth, backgroundHeight) = pil_image_bg.size
-    (foregroundWidth, foregroundHeight) = pil_image_fg.size
-
-    if foregroundWidth >= backgroundWidth:
-        logger.error('%s is greater or equal to %s specifically %s >= %s', 'foregroundWidth', 'backgroundWidth', foregroundWidth, backgroundWidth)
-
-    if foregroundHeight >= backgroundHeight:
-        logger.error('%s is greater or equal to %s specifically %s >= %s', 'foregroundHeight', 'backgroundHeight', foregroundHeight, backgroundHeight)
-
-    (minWidth, minHeight, maxWidth, maxHeight) = get_largest_bounding_box_assuming_using_center_point_to_affix_foreground_image(pil_image_bg, pil_image_fg)
-
-    return randomly_sample_point_within_rectangle_assuming_center_point_to_affix_foreground_image((minWidth, minHeight), (maxWidth, maxHeight), pil_image_bg, pil_image_fg)
-
-def yolo_to_kitti(annotation, pil_background_image):
-    x, y, width, height = annotation[1], annotation[2], annotation[3], annotation[4]
-    (image_width, image_height) = pil_background_image.size 
-    new_width = round(width * image_width)
-    new_height = round(height * image_height)
-    left = round(x * image_width) - new_width//2
-    top = round(y * image_height) - new_height//2
-    return (left, top, new_width, new_height)
-
-def get_top_left_bottom_right_coordinates(background_annotations, index, pil_background_image):
-    annotation = background_annotations[index]
-    (xTopLeft, yTopLeft, width, height) = yolo_to_kitti(annotation, pil_background_image)
-    xBottomRight = xTopLeft + width
-    yBottomRight = yTopLeft + height
-    return ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
-
-def randomly_sample_point_within_image_or_object_of_interest(background_image, occlusion_image, background_annotations, p):
-    logger = logging.getLogger(__name__)
-
-    (numRows, numCols) = background_annotations.shape 
-    useImage = True
-    if numRows == 0: # TODO: TEST if no annotations are there for an image
-        logger.debug('No annotations found for %s', path)
-    else:
-        r = random.random()
-        useImage = True if r > p else False
-        logger.debug('r was %f, p was %s, useImage %s', r, p, useImage)
-
-    if useImage:
-        logger.debug('Randomly sampling from whole image')
-        return randomly_sample_point_within_image(background_image, occlusion_image)
-    else:
-        index = randomly_choose_object_of_interest(numRows)
-        logger.debug('Randomly sampling from object of interest. Index chosen %i', index)
-        (topLeft, bottomRight) = get_top_left_bottom_right_coordinates(background_annotations, index, background_image)
-
-        (xTopLeft, yTopLeft) = topLeft
-        (xBottomRight, yBottomRight) = bottomRight
-        logger.debug('Rectangle chosen topLeft: (%i, %i), bottomRight: (%i, %i)', xTopLeft, yTopLeft, xBottomRight, yBottomRight)
-
-        return randomly_sample_point_within_rectangle_assuming_center_point_to_affix_foreground_image(topLeft, bottomRight, background_image, occlusion_image)
-
-def randomly_choose_object_of_interest(num_annotations) -> int: # returns index
-    return random.randint(0,num_annotations-1)
-
-def get_largest_bounding_box_assuming_using_center_point_to_affix_foreground_image(pil_image_bg, pil_image_fg):
-    logger = logging.getLogger(__name__)
-
-    (backgroundWidth, backgroundHeight) = pil_image_bg.size
-    (foregroundWidth, foregroundHeight) = pil_image_fg.size
-
-    width = round(foregroundWidth/2.0)
-    height = round(foregroundHeight/2.0)
-
-    logger.debug('background image size: (%s, %s)', backgroundWidth, backgroundHeight)
-    logger.debug('foreground image size: (%s, %s), half-size-rounded: (%s, %s)', foregroundWidth, foregroundHeight, width, height)
-
-    minWidth = width 
-    minHeight = height
-    maxWidth = backgroundWidth - width 
-    maxHeight = backgroundHeight - height
-
-    return (minWidth, minHeight, maxWidth, maxHeight) 
-
-def correct_bounding_box_coordinates_assuming_center_point_to_affix_foreground_image(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates, pil_image_bg, pil_image_fg):
-    logger = logging.getLogger(__name__)
-
-    (xTopLeft, yTopLeft) = backgroundImageTopLeftCoordinates
-    (xBottomRight, yBottomRight) = backgroundImageBottomRightCoordinates
-
-    (minWidth, minHeight, maxWidth, maxHeight) = get_largest_bounding_box_assuming_using_center_point_to_affix_foreground_image(pil_image_bg, pil_image_fg)
-
-    logger.debug('Largest bounding box coordinates: (%s, %s), (%s, %s)', minWidth, minHeight, maxWidth, maxHeight) 
-    logger.debug('Original coordinates: (%s, %s), (%s, %s)', xTopLeft, yTopLeft, xBottomRight, yBottomRight) 
-
-    xTopLeft = max(xTopLeft, minWidth)
-    yTopLeft = max(yTopLeft, minHeight)
-    
-    xBottomRight = min(xBottomRight, maxWidth)
-    yBottomRight = min(yBottomRight, maxHeight)
-
-    logger.debug('Revised coordinates: (%s, %s), (%s, %s)', xTopLeft, yTopLeft, xBottomRight, yBottomRight) 
-
-    return ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
-
-def randomly_sample_point_within_rectangle_assuming_center_point_to_affix_foreground_image(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates, pil_image_bg, pil_image_fg):
-    backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates = correct_bounding_box_coordinates_assuming_center_point_to_affix_foreground_image(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates, pil_image_bg, pil_image_fg)
-    return randomly_sample_point_within_rectangle(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates)
-
-def randomly_sample_point_within_rectangle(backgroundImageTopLeftCoordinates, backgroundImageBottomRightCoordinates):
-    logger = logging.getLogger(__name__)
-
-    (xTopLeft, yTopLeft) = backgroundImageTopLeftCoordinates
-    (xBottomRight, yBottomRight) = backgroundImageBottomRightCoordinates
-
-    if xTopLeft >= xBottomRight:
-        logger.error('%s is greater than %s specifically %s >= %s', 'xTopLeft', 'xBottomRight', xTopLeft, xBottomRight) 
-
-    if yTopLeft >= yBottomRight:
-        logger.error('%s is greater than %s specifically %s >= %s', 'yTopLeft', 'yBottomRight', yTopLeft, yBottomRight) 
-    
-    x = round(random.uniform(xTopLeft, xBottomRight))
-    y = round(random.uniform(yTopLeft, yBottomRight))
-
-    return (x,y)
 
 def randomly_sample_point_within_circle(xCenter, yCenter, radius):
     logger = logging.getLogger(__name__)
@@ -338,7 +213,8 @@ def create_synthetic_image_randomly(background_image, background_annotation, occ
 
     # TODO: call the high level method which chooses between whole image versus object of interest
     #point = randomly_sample_point_within_image(background_image, occlusion_image) # TODO: REMOVE
-    centerPoint = randomly_sample_point_within_image_or_object_of_interest(background_image, occlusion_image, background_annotation, probability_prioritize_objects_of_interest)
+    affixer: Affixer = OriginalAffixer(probability_prioritize_objects_of_interest)
+    centerPoint, _ = affixer.decide_where_and_scale(background_image, background_annotation, occlusion_image)
     (x0, y0) = centerPoint
     logger.debug('Randomly sampled point within background image is (%s,%s) which is the center point', x0, y0)
 
@@ -348,7 +224,6 @@ def create_synthetic_image_randomly(background_image, background_annotation, occ
     
     synthetic_image, original_occlusion_image_grayscale_image_mask = create_synthetic_image_point(background_image, occlusion_image, topLeftPoint, threshold)
     return synthetic_image, topLeftPoint, original_occlusion_image_grayscale_image_mask 
-
 
 def create_synthetic_image(background_image, occlusion_image, threshold, center_point):
     logger = logging.getLogger(__name__)
@@ -362,7 +237,6 @@ def create_synthetic_image(background_image, occlusion_image, threshold, center_
     
     synthetic_image, original_occlusion_image_grayscale_image_mask = create_synthetic_image_point(background_image, occlusion_image, topLeftPoint, threshold)
     return synthetic_image, topLeftPoint, original_occlusion_image_grayscale_image_mask 
-
 
 def compute_target_path(target_dir, path_background_image, cur_image_id):
     # Compute target path
@@ -471,7 +345,7 @@ def process_original_occlusion_image(
     occlusion_name = get_immediate_parent_folder(path_occlusion_image)
 
     rotator: Rotator = NoOpRotator()
-    affixer: Affixer = FixedAffixer()
+    affixer: Affixer = OriginalAffixer(probability_prioritize_objects_of_interest)
 
     for i in range(num_runs_per_original_image):
         logger.debug("For occlusion %s, image %s, run %d of %d", occlusion_name, occlusion_image_filename, i + 1, num_runs_per_original_image)
