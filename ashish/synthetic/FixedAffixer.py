@@ -11,5 +11,5 @@ class FixedAffixer(Affixer):
         backgroundAnnotations: np.ndarray,
         foregroundImage: Image
     ) -> Tuple[Tuple[int, int], float]:
-        return ((100, 100), 1.)
+        return ((450, 100), 1.2)
 
