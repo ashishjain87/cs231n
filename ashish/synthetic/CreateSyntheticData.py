@@ -162,6 +162,19 @@ def get_image_info(synthetic_image, file_name, image_id):
 
     return dict
 
+def determine_scaled_size_as_per_original_propotions(image, intendedSquareImageSideLength=100):
+    assert intendedSquareImageSideLength >= 10
+    (width, height) = image.size
+    smaller = min(width, height)
+    if smaller > intendedSquareImageSideLength:
+        divisor = math.floor(smaller/intendedSquareImageSideLength)
+    else:
+        divisor = 1
+    intendedWidth = math.floor(width/divisor)
+    intendedHeight = math.floor(height/divisor)
+    intendedSize = (intendedWidth, intendedHeight)
+    return intendedSize, divisor 
+
 def process_resized_occlusion_image(
     occlusion_image,
     occlusion_name,
@@ -255,8 +268,21 @@ def process_original_occlusion_image(
     for i in range(num_runs_per_original_image):
         logger.debug("For occlusion %s, image %s, run %d of %d", occlusion_name, occlusion_image_filename, i + 1, num_runs_per_original_image)
         occlusion_image_transformed = transformer.transform(occlusion_image)
-        (center_point, resize_scale) = affixer.decide_where_and_scale(background_image, background_annotation, occlusion_image_transformed)
-        occlusion_image_resized = resize_image(occlusion_image_transformed, background_image, resize_scale)  # specify the gaussian and standard deviation
+
+        # Give a smaller size to the affixer around 100x100 while preserving the aspect ratio of the occlusion image
+        intendedSize, intendedSizeDivisor = determine_scaled_size_as_per_original_propotions(occlusion_image_transformed)
+        occlusion_image_transformed_intended = occlusion_image_transformed.resize(intendedSize)
+        (center_point, resize_scale) = affixer.decide_where_and_scale(background_image, background_annotation, occlusion_image_transformed_intended)
+
+        # Determine final scale
+        final_resize_scale = (1./intendedSizeDivisor)*resize_scale
+        logger.debug(
+            "intendedSizeDivisor: %f, resize_scale: %f, final_resize_scale: %f",
+            intendedSizeDivisor,
+            resize_scale,
+            final_resize_scale) 
+
+        occlusion_image_resized = resize_image(occlusion_image_transformed, background_image, final_resize_scale)  # specify the gaussian and standard deviation
         # TODO: pass corresponding annotations file
         (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(
             occlusion_image_resized,
