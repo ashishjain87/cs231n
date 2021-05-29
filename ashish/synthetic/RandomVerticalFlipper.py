@@ -20,7 +20,10 @@ class RandomVerticalFlipper(ImageTransformer):
 
         if randomNumber < self.flipProbability: 
             logger.debug('Flipping image as %f < %f', randomNumber, self.flipProbability)
-            return ImageOps.flip(foregroundImage)
+            originalFilename = foregroundImage.filename
+            transformedImage = ImageOps.flip(foregroundImage)
+            transformedImage.filename = originalFilename # Filenames are necessary for later
+            return transformedImage
         else:
             logger.debug('No change to image as %f > %f', randomNumber, self.flipProbability)
             return foregroundImage

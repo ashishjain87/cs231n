@@ -11,10 +11,26 @@ from PIL import Image
 from ImageTransformer import ImageTransformer 
 
 class RandomRotator(ImageTransformer):
+    def  __init__(self, rotationProbability: float = 0.5) -> None:
+        super().__init__()
+        self.rotationProbability = rotationProbability
+
     def transform(
         self,
         foregroundImage: Image
     ) -> Image:
+        logger = logging.getLogger(__name__)
+
+        randomNumber = random.random()
+        logger.debug('randomNumber: %f', randomNumber)
+
+        # Determine whether to rotate or not 
+        if randomNumber > self.rotationProbability: 
+            logger.debug('No change to image as %f > %f', randomNumber, self.rotationProbability)
+            return foregroundImage
+
+        # Rotate
+        logger.debug('Rotating image as %f < %f', randomNumber, self.rotationProbability)
         return RandomRotator.rotate(foregroundImage)
 
     @staticmethod
@@ -22,6 +38,9 @@ class RandomRotator(ImageTransformer):
         foregroundImage: Image
     ) -> Image:
         logger = logging.getLogger(__name__)
+
+        # Move forward with rotation
+        originalFilename = foregroundImage.filename
 
         # Create a new image which will not drop positive pixels simply because they go out of the image frame when the image is rotated. 
         expandedImage = RandomRotator.expand_image_as_per_diagonal(foregroundImage) 
@@ -35,6 +54,7 @@ class RandomRotator(ImageTransformer):
 
         # Crop the image to remove empty space
         croppedImage = RandomRotator.remove_empty_space_around_edges(rotatedImage)
+        croppedImage.filename = originalFilename # Filenames are necessary for later
 
         return croppedImage
 
@@ -54,6 +74,8 @@ class RandomRotator(ImageTransformer):
         blankImage = Image.new('RGBA', (widthExpanded, heightExpanded), (0, 0, 0, 0))
         centerExpanded = (diagLength, diagLength)
         syntheticImage, topLeftPoint, mask = SyntheticImage.create_synthetic_image(blankImage, image, 100, centerExpanded)
+        syntheticImage.filename = image.filename
+
         return syntheticImage
 
     @staticmethod

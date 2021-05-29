@@ -20,6 +20,10 @@ import Startup
 
 from ImageTransformer import ImageTransformer
 from NoOpImageTransformer import NoOpImageTransformer
+from RandomRotator import RandomRotator
+from RandomHorizontalFlipper import RandomHorizontalFlipper
+from RandomVerticalFlipper import RandomVerticalFlipper
+from DecoratorImageTransformer import DecoratorImageTransformer
 from Affixer import Affixer
 from OriginalAffixer import OriginalAffixer
 from ImagePath import *
@@ -245,14 +249,14 @@ def process_original_occlusion_image(
 
     occlusion_name = get_immediate_parent_folder(path_occlusion_image)
 
-    rotator: ImageTransformer = NoOpImageTransformer()
+    transformer: ImageTransformer= DecoratorImageTransformer([RandomVerticalFlipper(), RandomHorizontalFlipper(), RandomRotator()])
     affixer: Affixer = OriginalAffixer(probability_prioritize_objects_of_interest)
 
     for i in range(num_runs_per_original_image):
         logger.debug("For occlusion %s, image %s, run %d of %d", occlusion_name, occlusion_image_filename, i + 1, num_runs_per_original_image)
-        occlusion_image_rotated = rotator.transform(occlusion_image) # Placeholder for later 
-        (center_point, resize_scale) = affixer.decide_where_and_scale(background_image, background_annotation, occlusion_image_rotated)
-        occlusion_image_resized = resize_image(occlusion_image_rotated, background_image, resize_scale)  # specify the gaussian and standard deviation
+        occlusion_image_transformed = transformer.transform(occlusion_image)
+        (center_point, resize_scale) = affixer.decide_where_and_scale(background_image, background_annotation, occlusion_image_transformed)
+        occlusion_image_resized = resize_image(occlusion_image_transformed, background_image, resize_scale)  # specify the gaussian and standard deviation
         # TODO: pass corresponding annotations file
         (image_annotation, image_info, cur_image_id) = process_resized_occlusion_image(
             occlusion_image_resized,

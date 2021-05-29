@@ -20,7 +20,10 @@ class RandomHorizontalFlipper(ImageTransformer):
 
         if randomNumber < self.flipProbability: 
             logger.debug('Flipping image as %f < %f', randomNumber, self.flipProbability)
-            return ImageOps.mirror(foregroundImage)
+            originalFilename = foregroundImage.filename
+            transformedImage = ImageOps.mirror(foregroundImage)
+            transformedImage.filename = originalFilename # Filenames are necessary for later
+            return transformedImage
         else:
             logger.debug('No change to image as %f > %f', randomNumber, self.flipProbability)
             return foregroundImage
