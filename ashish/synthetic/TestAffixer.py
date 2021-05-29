@@ -1,5 +1,6 @@
 import Annotation
 import CreateSyntheticData
+import SyntheticImage
 import logging
 import logging.config
 import os
@@ -42,7 +43,7 @@ def main():
 
     # Generate the image as per the outputs of the Affixer
     foregroundImageResized = CreateSyntheticData.resize_image(foregroundImage, backgroundImage, scale)
-    (syntheticImage, point, mask) = CreateSyntheticData.create_synthetic_image(
+    (syntheticImage, point, mask) = SyntheticImage.create_synthetic_image(
         backgroundImage,
         foregroundImageResized,
         100,
