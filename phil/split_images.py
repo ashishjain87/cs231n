@@ -27,17 +27,23 @@ def move_data(ids, orig_dir, new_dir, split_name="train", extension=".png"):
 
 if __name__ == "__main__":
     if not os.path.exists(DATA_DIR_NEW + 'train'):
-        os.mkdir(DATA_DIR_NEW + 'train')
+        os.makedirs(DATA_DIR_NEW + 'train')
     if not os.path.exists(DATA_DIR_NEW + 'val'):
-        os.mkdir(DATA_DIR_NEW + 'val')
+        os.makedirs(DATA_DIR_NEW + 'val')
     if not os.path.exists(DATA_DIR_NEW + 'test'):
-        os.mkdir(DATA_DIR_NEW + 'test')
-    if not os.path.exists(LABELS_DIR_NEW + 'train'):
-        os.makedirs(LABELS_DIR_NEW + 'train')
-    if not os.path.exists(LABELS_DIR_NEW + 'val'):
-        os.makedirs(LABELS_DIR_NEW + 'val')
-    if not os.path.exists(LABELS_DIR_NEW + 'test'):
-        os.makedirs(LABELS_DIR_NEW + 'test')
+        os.makedirs(DATA_DIR_NEW + 'test')
+    if not os.path.exists(YOLO_LABELS_DIR_NEW + 'train'):
+        os.makedirs(YOLO_LABELS_DIR_NEW + 'train')
+    if not os.path.exists(YOLO_LABELS_DIR_NEW + 'val'):
+        os.makedirs(YOLO_LABELS_DIR_NEW + 'val')
+    if not os.path.exists(YOLO_LABELS_DIR_NEW + 'test'):
+        os.makedirs(YOLO_LABELS_DIR_NEW + 'test')
+    if not os.path.exists(KITTI_LABELS_DIR_ORIG + 'train'):
+        os.makedirs(KITTI_LABELS_DIR_ORIG + 'train')
+    if not os.path.exists(KITTI_LABELS_DIR_ORIG + 'val'):
+        os.makedirs(KITTI_LABELS_DIR_ORIG + 'val')
+    if not os.path.exists(KITTI_LABELS_DIR_ORIG + 'test'):
+        os.makedirs(KITTI_LABELS_DIR_ORIG + 'test')
 
     train_ids = np.genfromtxt(TRAIN_PATH, delimiter=",", dtype=None, encoding=None)
     val_ids = np.genfromtxt(VAL_PATH, delimiter=",", dtype=None, encoding=None)
