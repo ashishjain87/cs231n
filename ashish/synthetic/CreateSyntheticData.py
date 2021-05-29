@@ -13,6 +13,7 @@ import numpy as np
 import os
 import random
 import sys
+import tqdm
 import yaml
 import SyntheticConfig as synthetic_config
 import Startup
@@ -372,6 +373,7 @@ def process_original_occlusion_image(
     return (image_annotation_collection, image_info_collection, cur_image_id)
 
 def create_synthetic_images_for_all_images_under_current_folders(
+    subdir,
     background_dir_path_images,
     background_dir_path_annotations,
     path_foreground_dir,
@@ -435,7 +437,7 @@ def create_synthetic_images_for_all_images_under_current_folders(
     if len(background_image_paths) == 0:
         logger.warn("No background images found")
 
-    for foreground_image_path in foreground_image_paths:
+    for foreground_image_path in tqdm.tqdm(foreground_image_paths, desc=subdir, leave=True):
         logger.debug("Processing foreground image: %s", foreground_image_path)
         for background_image_path in background_image_paths:
             logger.debug("Processing background image: %s", background_image_path)
@@ -465,7 +467,7 @@ def create_synthetic_images_for_all_direct_subfolders(syntheticConfig, occlusion
     cur_image_id = syntheticConfig.cur_image_id
 
     subdirs = get_immediate_subdirectories(syntheticConfig.path_foreground_super_dir)
-    for subdir in subdirs:
+    for subdir in tqdm.tqdm(subdirs, desc="Overall", position=0):
         logger.info("Processing %s", subdir)
         path_foreground_dir = os.path.join(syntheticConfig.path_foreground_super_dir, subdir)
         target_dir_path_images = os.path.join(syntheticConfig.target_dir, subdir, syntheticConfig.images_dir_name)
@@ -476,6 +478,7 @@ def create_synthetic_images_for_all_direct_subfolders(syntheticConfig, occlusion
         logger.debug('target_dir_path_annotations: %s', target_dir_path_annotations)
 
         (image_annotations, image_infos, cur_image_id) = create_synthetic_images_for_all_images_under_current_folders( \
+                subdir, \
                 syntheticConfig.background_dir_path_images, \
                 syntheticConfig.background_dir_path_annotations, \
                 path_foreground_dir, \
