@@ -18,8 +18,8 @@ import yaml
 import SyntheticConfig as synthetic_config
 import Startup
 
-from Rotator import Rotator
-from NoOpRotator import NoOpRotator
+from ImageTransformer import ImageTransformer
+from NoOpImageTransformer import NoOpImageTransformer
 from Affixer import Affixer
 from OriginalAffixer import OriginalAffixer
 from ImagePath import *
@@ -245,12 +245,12 @@ def process_original_occlusion_image(
 
     occlusion_name = get_immediate_parent_folder(path_occlusion_image)
 
-    rotator: Rotator = NoOpRotator()
+    rotator: ImageTransformer = NoOpImageTransformer()
     affixer: Affixer = OriginalAffixer(probability_prioritize_objects_of_interest)
 
     for i in range(num_runs_per_original_image):
         logger.debug("For occlusion %s, image %s, run %d of %d", occlusion_name, occlusion_image_filename, i + 1, num_runs_per_original_image)
-        occlusion_image_rotated = rotator.rotate(occlusion_image) # Placeholder for later 
+        occlusion_image_rotated = rotator.transform(occlusion_image) # Placeholder for later 
         (center_point, resize_scale) = affixer.decide_where_and_scale(background_image, background_annotation, occlusion_image_rotated)
         occlusion_image_resized = resize_image(occlusion_image_rotated, background_image, resize_scale)  # specify the gaussian and standard deviation
         # TODO: pass corresponding annotations file

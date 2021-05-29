@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from PIL import Image 
 
-class Rotator(ABC):
+class ImageTransformer(ABC):
     @abstractmethod
-    def rotate(
+    def transform(
         self,
         foregroundImage: Image
     ) -> Image:

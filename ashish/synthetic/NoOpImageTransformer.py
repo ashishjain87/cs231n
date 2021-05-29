@@ -1,8 +1,8 @@
 from PIL import Image 
-from Rotator import Rotator
+from ImageTransformer import ImageTransformer 
 
-class NoOpRotator(Rotator):
-    def rotate(
+class NoOpImageTransformer(ImageTransformer):
+    def transform(
         self,
         foregroundImage: Image
     ) -> Image:
