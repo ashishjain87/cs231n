@@ -170,11 +170,10 @@ def annotated_yolo_to_kitti(yolo_label: np.ndarray) -> np.ndarray:
         top = math.floor(y * IMG_HEIGHT) - new_height//2
         right = left + new_width
         bottom = top + new_height
-        kitti_annotation = [annotation[0], -1, 0, -1, left, top, right, bottom, -1,-1,-1,-1,-1,-1]
+        kitti_annotation = [annotation[0], -1, -10, -1, left, top, right, bottom, -1,-1,-1,-1,-1,-1,-1] # -10 for occlusion state ensures that occluder considered in front of everything
         kitti_label.append(kitti_annotation)
     
     return np.array(kitti_label)
-
 
 
 def convertToYoloBBox(bbox):
