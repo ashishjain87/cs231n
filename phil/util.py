@@ -44,7 +44,7 @@ def get_filename_and_extension(path):
     return (path.stem, path.suffix)
 
 def rel_to_absolute_label(annotation):
-    x, y, width, height = annotation[1], annotation[2], annotation[3], annotation[4]
+    x, y, width, height = annotation[1:5]
     new_width = math.floor(width * IMG_WIDTH)
     new_height = math.floor(height * IMG_HEIGHT)
     left = math.floor(x * IMG_WIDTH) - new_width//2
