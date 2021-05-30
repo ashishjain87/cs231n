@@ -1,3 +1,4 @@
+import sys
 import argparse
 import ast 
 import confuse
@@ -12,7 +13,6 @@ import ntpath
 import numpy as np
 import os
 import random
-import sys
 import tqdm
 import yaml
 import SyntheticConfig as synthetic_config
@@ -24,8 +24,12 @@ from RandomRotator import RandomRotator
 from RandomHorizontalFlipper import RandomHorizontalFlipper
 from RandomVerticalFlipper import RandomVerticalFlipper
 from DecoratorImageTransformer import DecoratorImageTransformer
+
 from Affixer import Affixer
 from OriginalAffixer import OriginalAffixer
+from SideAffixer import SideAffixer
+from NonSideAffixer import NonSideAffixer
+
 from ImagePath import *
 from Annotation import *
 from SyntheticImage import *
@@ -175,6 +179,22 @@ def determine_scaled_size_as_per_original_propotions(image, intendedSquareImageS
     intendedSize = (intendedWidth, intendedHeight)
     return intendedSize, divisor 
 
+def create_affixer(option: str, probability_prioritize_objects_of_interest: float) -> Affixer:
+    logger = logging.getLogger(__name__)
+    if option == "SideAffixer": 
+        logger.info("SideAffixer being used!")
+        return SideAffixer()
+    elif option == "NonSideAffixer":
+        logger.info("NonSideAffixer being used!")
+        return NonSideAffixer()
+    elif option == "OriginalAffixer":
+        logger.info("OriginalAffixer being used!")
+        return OriginalAffixer(probability_prioritize_objects_of_interest)
+    else:
+        # TODO: Add support for NoValueRegionAffixer
+        logger.error("AffixerType %s not supported!", option)
+        raise Exception("Affixer type not supported")
+
 def process_resized_occlusion_image(
     occlusion_image,
     occlusion_name,
@@ -245,6 +265,7 @@ def process_original_occlusion_image(
     cur_image_id,
     occlusion_name_occlusion_id_dict,
     probability_prioritize_objects_of_interest,
+    affixerType
 ):
     logger = logging.getLogger(__name__)
 
@@ -263,7 +284,7 @@ def process_original_occlusion_image(
     occlusion_name = get_immediate_parent_folder(path_occlusion_image)
 
     transformer: ImageTransformer= DecoratorImageTransformer([RandomVerticalFlipper(), RandomHorizontalFlipper(), RandomRotator()])
-    affixer: Affixer = OriginalAffixer(probability_prioritize_objects_of_interest)
+    affixer: Affixer = create_affixer(affixerType, probability_prioritize_objects_of_interest)
 
     for i in range(num_runs_per_original_image):
         logger.debug("For occlusion %s, image %s, run %d of %d", occlusion_name, occlusion_image_filename, i + 1, num_runs_per_original_image)
@@ -313,6 +334,7 @@ def create_synthetic_images_for_all_images_under_current_folders(
     cur_image_id,
     occlusion_name_occlusion_id_dict,
     probability_prioritize_objects_of_interest,
+    affixerType
 ):
     logger = logging.getLogger(__name__)
 
@@ -382,6 +404,7 @@ def create_synthetic_images_for_all_images_under_current_folders(
                 cur_image_id,
                 occlusion_name_occlusion_id_dict,
                 probability_prioritize_objects_of_interest,
+                affixerType
             )
 
             image_annotation_collection.append(image_annotations)
@@ -417,14 +440,14 @@ def create_synthetic_images_for_all_direct_subfolders(syntheticConfig, occlusion
                 target_dir_path_annotations, \
                 cur_image_id, \
                 occlusion_name_occlusion_id_dict, \
-                syntheticConfig.probability_prioritize_objects_of_interest)
-
+                syntheticConfig.probability_prioritize_objects_of_interest, \
+                syntheticConfig.affixerType) 
         logger.info('Subdirectory %s processed', subdir)
         logger.info('Number of images created for %s is %s', subdir, len(image_infos))
         logger.info('Number of annotations created for %s is %s', subdir, len(image_annotations))
 
-        image_annotation_collection.append(image_annotations)
-        image_info_collection.append(image_infos)
+        image_annotation_collection.extend(image_annotations)
+        image_info_collection.extend(image_infos)
 
     logger.info('Total number of images created is %s', len(image_info_collection))
     logger.info('Total number of annotations created is %s', len(image_annotation_collection))

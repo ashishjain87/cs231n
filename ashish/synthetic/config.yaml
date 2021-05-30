@@ -8,7 +8,7 @@ background:
 
 pathForegroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/plasticbags/reduced/PlasticBag01_100x100.jpeg
 pathForegroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/basketballs/debug/Basketball
-pathForegroundSuperDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/single-shot/train
+pathForegroundSuperDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/single-shot-original-size/train
 
 pathOcclusionNameToOcclusionIdMapping: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/occlusion-name-to-occlusion-id.csv
 
@@ -17,8 +17,10 @@ output:
         imagesDirName: images
         annotationsDirName: labels
 
-StartImageId: 80000
+StartImageId: 2000000
 
 threshold: 250
 
 probabilityPrioritizeObjectsOfInterest: 0.5
+
+affixerType: OriginalAffixer

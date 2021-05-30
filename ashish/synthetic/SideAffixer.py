@@ -3,9 +3,8 @@ from typing import Tuple
 from PIL import Image
 import random
 
-from ashish.synthetic.Affixer import Affixer
-from ashish.synthetic.OriginalAffixer import OriginalAffixer
-
+from Affixer import Affixer
+from OriginalAffixer import OriginalAffixer
 
 DEFAULT_LEAST_OCCLUSION_SEVERITY = 0.25
 DEFAULT_GREATEST_OCCLUSION_SEVERITY = 0.75
