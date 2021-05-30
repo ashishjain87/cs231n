@@ -1,3 +1,5 @@
+import enum
+
 # CONSTANTS
 PROJ_DIR = "./"
 DATASET_DIR = PROJ_DIR + "first20/"
@@ -14,3 +16,17 @@ MIN_IMG_HEIGHT = 370
 IMG_WIDTH = MIN_IMG_WIDTH
 IMG_HEIGHT = MIN_IMG_HEIGHT
 IMG_DEPTH = 3
+
+Classes = {'Car': 0, 'Van': 1, 'Truck': 2,
+            'Pedestrian': 3, 'Person_sitting': 4, 'Cyclist': 5,
+            'Tram': 6, 'Misc': 7, 'DontCare': 8}
+
+PeopleClasses = {'Pedestrian': 3, 'Person_sitting': 4, 'Cyclist': 5}
+PeopleInts = [3,4,5]
+Vehicle = {'Car': 0, 'Van': 1, 'Truck': 2, 'Tram': 6}
+VehicleInts = [0,1,2,6]
+
+OcclusionState = {   'FullyVisible': 0,
+   'PartlyOccluded': 1,
+   'LargelyOccluded': 2,
+   'Unknown': 3 }

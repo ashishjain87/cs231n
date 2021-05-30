@@ -134,6 +134,7 @@ def get_labels(labels_pickle=None, rel_yolo_dir=LABELS_DIR_YOLO, rel_kitti_dir=L
             kitti_label_file = get_filename_from_name(rel_kitti_dir, get_name_from_id(label_id), ".txt")
             kitti_label = np.array(np.genfromtxt(kitti_label_file, delimiter=" ", dtype=None, encoding=None))
             kitti_label = clean_kitti(kitti_label)
+            kitti_label = [list(entry)[1:] for entry in kitti_label]
             yolo_label = np.genfromtxt(label_file, delimiter=" ", dtype=float, encoding=None)
             yolo_label = clean_yolo(yolo_label)
 
