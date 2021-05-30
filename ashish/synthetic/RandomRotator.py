@@ -26,10 +26,10 @@ class RandomRotator(ImageTransformer):
 
         # Determine whether to rotate or not 
         if randomNumber > self.rotationProbability: 
-            % TODO: Move removing whitespace functionality to a separate image transformer later
+            # TODO: Move removing whitespace functionality to a separate image transformer later
             # Crop the image to remove empty space
             originalFilename = foregroundImage.filename
-            croppedImage = RandomRotator.remove_empty_space_around_edges(rotatedImage)
+            croppedImage = RandomRotator.remove_empty_space_around_edges(foregroundImage)
             croppedImage.filename = originalFilename # Filenames are necessary for later
             logger.debug('No rotation. Only cropping image. As %f > %f', randomNumber, self.rotationProbability)
             return croppedImage
