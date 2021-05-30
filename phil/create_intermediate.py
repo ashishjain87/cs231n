@@ -287,4 +287,4 @@ if __name__ == "__main__":
     copy_orig(ORIG_DIR, INTERMEDIATE_DIR)
 
     # Copy augmented images into output dir
-    copy_aug(AUG_DIR, INTERMEDIATE_DIR, ORIG_DIR)
+    # copy_aug(AUG_DIR, INTERMEDIATE_DIR, ORIG_DIR)
