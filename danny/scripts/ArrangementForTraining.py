@@ -69,7 +69,10 @@ def get_chosen_images(path_to_base_dir: str, one_per_id: bool = False, use_aug_p
 def copy_label_file(path_to_top_level_input_dir: str, out_dir_set_name: str, out_dir_top_level_path: str,
                     original_label_file_name: str, output_label_file_name: str):
     os.system(
-        f"cp {path_to_top_level_input_dir}/labels/{out_dir_set_name}/orig/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/{output_label_file_name}"
+        f"cp {path_to_top_level_input_dir}/labels/{out_dir_set_name}/orig/modal/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/modal/{output_label_file_name}"
+    )
+    os.system(
+        f"cp {path_to_top_level_input_dir}/labels/{out_dir_set_name}/orig/amodal/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/amodal/{output_label_file_name}"
     )
 
 
@@ -91,6 +94,8 @@ def populate_out_dir(chosen_images: Dict[str, List[Tuple[str, str]]], path_to_to
 
     os.system(f"mkdir {out_dir_top_level_path}/images/{out_dir_set_name}")
     os.system(f"mkdir {out_dir_top_level_path}/labels/{out_dir_set_name}")
+    os.system(f"mkdir {out_dir_top_level_path}/labels/{out_dir_set_name}/modal")
+    os.system(f"mkdir {out_dir_top_level_path}/labels/{out_dir_set_name}/amodal")
 
     print(f"Populating output directories for {out_dir_set_name} set...")
     for image_id in tqdm(chosen_images.keys()):
