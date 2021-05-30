@@ -24,7 +24,8 @@ def read_background_annotation_kitti(kitti_label_path: str) -> np.ndarray:
 def randomly_choose_object_of_interest(num_annotations) -> int: # returns index
     return random.randint(0,num_annotations-1)
 
-
+def write_label_to_file(label: np.ndarray, filepath: str):
+    np.savetxt(filepath, label, delimiter=" ")
 
 def example_usage():
     image_name = "000001"
