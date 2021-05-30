@@ -105,6 +105,7 @@ import shutil
 import glob
 import random
 from datetime import datetime
+import numpy as np
 from create_modal_boxes import *
 
 AUG_DIR = os.path.join(os.path.dirname(__file__), './augmented20/') # Augmented data
@@ -162,8 +163,7 @@ def copy_orig(orig_data_dir=ORIG_DIR, intermediate_dir=INTERMEDIATE_DIR):
         for image_filename in os.listdir(orig_images_split_path):
             if image_filename.find(".DS_Store") != -1:
                 continue
-            # if image_filename.find("006757") == -1:
-            #     continue
+
             # Copy image
             s_img = os.path.join(os.path.dirname(__file__), orig_images_split_path + image_filename)
             d_img = os.path.join(intermediate_dir, "images/" + split + "/orig/")
@@ -178,7 +178,7 @@ def copy_orig(orig_data_dir=ORIG_DIR, intermediate_dir=INTERMEDIATE_DIR):
             # Create and write amodal KITTI label
             amodal_kitti_label_path = os.path.join(os.path.dirname(__file__), orig_labels_kitti_split_path + image_name + '.txt')
             amodal_kitti_label = read_background_annotation_kitti(amodal_kitti_label_path)
-            modal_kitti_label, modal_amodal_different_count = generate_modal_labels(amodal_kitti_label, modal_amodal_different_count)
+            modal_kitti_label, modal_amodal_different_count = generate_modal_label(amodal_kitti_label, modal_amodal_different_count)
             modal_yolo_label = kitti_to_yolo(modal_kitti_label)
             d_label_modal_filepath = os.path.join(intermediate_dir, "labels/" + split + "/orig/modal/" + image_name + '.txt')
             write_modal_label_to_file(modal_yolo_label, d_label_modal_filepath)
@@ -195,7 +195,7 @@ def copy_orig(orig_data_dir=ORIG_DIR, intermediate_dir=INTERMEDIATE_DIR):
 
 
 
-def copy_aug(aug_data_dir_path=AUG_DIR, intermediate_dir=INTERMEDIATE_DIR):
+def copy_aug(aug_data_dir_path=AUG_DIR, intermediate_dir=INTERMEDIATE_DIR, orig_data_dir=ORIG_DIR):
     splits = os.listdir(aug_data_dir_path)
     if '.DS_Store' in splits:
         splits.remove('.DS_Store')
@@ -233,19 +233,33 @@ def copy_aug(aug_data_dir_path=AUG_DIR, intermediate_dir=INTERMEDIATE_DIR):
                 # Copy label
                 image_name, _ = get_filename_and_extension(image_filename)
                 image_id, occlusion_id = tuple(image_name.split('.'))
-                s_label = os.path.join(labels_dir_path, image_id + '.annotated.' + occlusion_id + '.txt')
-                d_label_dir = os.path.join(intermediate_dir, "labels/" + split + '/aug/' + occlusion_class + '/amodal/')
+                occlusion_yolo_label_path = os.path.join(labels_dir_path, image_id + '.annotated.' + occlusion_id + '.txt')
+
+                # Get occlusion and original kitti labels
+                original_yolo_label_filepath = orig_data_dir + 'yolo_labels/' + split + '/' + image_id + '.txt'
+                original_kitti_label_filepath = orig_data_dir + 'kitti_labels/' + split + '/' + image_id + '.txt'
+                original_amodal_kitti_label = read_background_annotation_kitti(original_kitti_label_filepath)
+
+                occlusion_yolo_label = read_background_annotation_yolo(occlusion_yolo_label_path)
+                occlusion_amodal_kitti_label = annotated_yolo_to_kitti(occlusion_yolo_label)
+                num_occlusions = occlusion_amodal_kitti_label.shape[0]
+
+                # Combine occlusion with original label
+                concat_amodal_kitti_label = np.concatenate((original_amodal_kitti_label, occlusion_amodal_kitti_label))
+
+                # Get modal bboxes
+                concat_modal_kitti_label, modal_amodal_different_count = generate_modal_label(concat_amodal_kitti_label, modal_amodal_different_count)
+                modal_kitti_label = concat_modal_kitti_label[:-num_occlusions,:]    # Discard occluder labels
+                modal_yolo_label = kitti_to_yolo(modal_kitti_label)
+
+                # Write amodal YOLO label
+                d_label_dir = os.path.join(intermediate_dir, 'labels/' + split + '/aug/' + occlusion_class + '/amodal/')
                 if not os.path.exists(d_label_dir):
                     os.makedirs(d_label_dir)
                 d_label = os.path.join(d_label_dir, image_id + '.annotated.' + occlusion_id + '.txt')
-                shutil.copy2(s_label, d_label)
-            
-                # Create and write amodal KITTI label
-                yolo_label = read_background_annotation_yolo(d_label)
-                amodal_kitti_label = annotated_yolo_to_kitti(yolo_label)
-                modal_kitti_label, modal_amodal_different_count = generate_modal_labels(amodal_kitti_label, modal_amodal_different_count)
-                modal_yolo_label = kitti_to_yolo(modal_kitti_label)
+                shutil.copy2(original_yolo_label_filepath, d_label)
 
+                # Write modal YOLO label
                 d_label_modal_dir = os.path.join(intermediate_dir, "labels/" + split + '/aug/' + occlusion_class + '/modal/')
                 if not os.path.exists(d_label_modal_dir):
                     os.makedirs(d_label_modal_dir)
@@ -269,8 +283,8 @@ if __name__ == "__main__":
     if not os.path.exists(INTERMEDIATE_DIR):
         os.makedirs(INTERMEDIATE_DIR)
     
-    # Copy original images into output dir
+    # # Copy original images into output dir
     copy_orig(ORIG_DIR, INTERMEDIATE_DIR)
 
     # Copy augmented images into output dir
-    copy_aug(AUG_DIR, INTERMEDIATE_DIR)
+    copy_aug(AUG_DIR, INTERMEDIATE_DIR, ORIG_DIR)
