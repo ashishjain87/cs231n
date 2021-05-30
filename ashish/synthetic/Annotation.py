@@ -1,5 +1,6 @@
 import logging
 import logging.config
+import math
 import numpy as np
 import os
 
@@ -39,6 +40,71 @@ def get_bounding_box(synthetic_grayscale_mask):
  
     return (x0, y0, width, height)
 
+def compute_top_left_and_bottom_right_coordinates(xCenter, yCenter, width, height): 
+    halfWidth = width/2.
+    halfHeight = height/2.
+
+    xTopLeft = xCenter - halfWidth
+    xBottomRight = xCenter + halfWidth
+
+    yTopLeft = yCenter - halfHeight
+    yBottomRight = yCenter + halfHeight
+
+    return ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight))
+
+def convert_top_left_and_bottom_right_coordinates_to_center_width_height_coordinates(topLeft, bottomRight):
+    logger = logging.getLogger(__name__)
+
+    (xTopLeft, yTopLeft) = topLeft
+    (xBottomRight, yBottomRight) = bottomRight
+
+    if xTopLeft >= xBottomRight:
+        logger.error("xTopLeft > xBottomRight specifically %f > %f", xTopLeft, xBottomRight) 
+
+    if yTopLeft >= yBottomRight:
+        logger.error("yTopLeft > yBottomRight specifically %f > %f", yTopLeft, yBottomRight) 
+
+    halfWidth = math.ceil((xBottomRight - xTopLeft)/2.) # ceiling because we want to be conservative
+    halfHeight = math.ceil((yBottomRight - yTopLeft)/2.) # ceiling because we want to be conservative
+
+    xCenter = xTopLeft + halfWidth
+    yCenter = yTopLeft + halfHeight
+
+    width = math.ceil(halfWidth*2)
+    height = math.ceil(halfHeight*2)
+
+    return (xCenter, yCenter, width, height)
+
+def clip_bounding_box(xCenter, yCenter, width, height, pil_synthetic_image):
+    logger = logging.getLogger(__name__)
+
+    ((xTopLeft, yTopLeft), (xBottomRight, yBottomRight)) = compute_top_left_and_bottom_right_coordinates(xCenter, yCenter, width, height)
+
+    if xTopLeft >= xBottomRight:
+        logger.error("xTopLeft > xBottomRight specifically %f > %f", xTopLeft, xBottomRight) 
+
+    if yTopLeft >= yBottomRight:
+        logger.error("yTopLeft > yBottomRight specifically %f > %f", yTopLeft, yBottomRight) 
+
+    (syntheticImageWidth, syntheticImageHeight) = pil_synthetic_image.size
+
+    clippedXTopLeft = max(0, xTopLeft) 
+    clippedYTopLeft = max(0, yTopLeft) 
+
+    clippedXBottomRight = min(xBottomRight, syntheticImageWidth-1)  
+    clippedYBottomRight = min(yBottomRight, syntheticImageHeight-1)
+
+    return convert_top_left_and_bottom_right_coordinates_to_center_width_height_coordinates((clippedXTopLeft, clippedYTopLeft), (clippedXBottomRight, clippedYBottomRight))
+
+def compute_annotation_yolo_format(xCenter, yCenter, maskWidthWithinForegroundImage, maskHeightWithinForegroundImage, backgroundImageWidth, backgroundImageHeight):
+    xCenterWrtBackgroundImage = xCenter/backgroundImageWidth
+    yCenterWrtBackgroundImage = yCenter/backgroundImageHeight
+
+    occlusionWidthWrtBackgroundImage = maskWidthWithinForegroundImage*1.0/backgroundImageWidth
+    occlusionHeightWrtBackgroundImage = maskHeightWithinForegroundImage*1.0/backgroundImageHeight
+
+    return (xCenterWrtBackgroundImage, yCenterWrtBackgroundImage, occlusionWidthWrtBackgroundImage, occlusionHeightWrtBackgroundImage)
+
 def compute_annotation(pil_background_image, pil_synthetic_image, pil_occlusion_image, top_left_point, original_occlusion_image_grayscale_image_mask):
     logger = logging.getLogger(__name__)
 
@@ -54,14 +120,10 @@ def compute_annotation(pil_background_image, pil_synthetic_image, pil_occlusion_
 
     xCenter = occlusionImageTopLeftx + topLeftPointMaskWithinForegroundImagex + (maskWidthWithinForegroundImage/2.0)
     yCenter = occlusionImageTopLefty + topLeftPointMaskWithinForegroundImagey + (maskHeightWithinForegroundImage/2.0)
-    
-    xCenterWrtBackgroundImage = xCenter/backgroundImageWidth
-    yCenterWrtBackgroundImage = yCenter/backgroundImageHeight
 
-    occlusionWidthWrtBackgroundImage = maskWidthWithinForegroundImage*1.0/backgroundImageWidth
-    occlusionHeightWrtBackgroundImage = maskHeightWithinForegroundImage*1.0/backgroundImageHeight
+    (clippedXCenter, clippedYCenter, clippedWidth, clippedHeight) = clip_bounding_box(xCenter, yCenter, maskWidthWithinForegroundImage, maskHeightWithinForegroundImage, pil_synthetic_image)
 
-    return (xCenterWrtBackgroundImage, yCenterWrtBackgroundImage, occlusionWidthWrtBackgroundImage, occlusionHeightWrtBackgroundImage)
+    return compute_annotation_yolo_format(clippedXCenter, clippedYCenter, clippedWidth, clippedHeight, backgroundImageWidth, backgroundImageHeight)
 
 def save_image_annotation(path_background_image, image_annotation, target_annotations_dir, cur_image_id, occlusion_name_occlusion_id_dict, occlusion_name):
     logger = logging.getLogger(__name__)
