@@ -6,8 +6,10 @@ import numpy as np
 
 DATA_DIR_ORIG = './data/images_original/'
 DATA_DIR_NEW = './data/images/'
-LABELS_DIR_ORIG = './data/labels_original/'
-LABELS_DIR_NEW = './data/labels/'
+YOLO_LABELS_DIR_ORIG = './data/labels_original/'
+YOLO_LABELS_DIR_NEW = './data/labels/'
+KITTI_LABELS_DIR_ORIG = './data/kitti_labels_original/'
+KITTI_LABELS_DIR_NEW = './data/kitti_labels/'
 TRAIN_PATH = './train_split.csv'
 VAL_PATH = './val_split.csv'
 TEST_PATH = './test_split.csv'
@@ -25,17 +27,23 @@ def move_data(ids, orig_dir, new_dir, split_name="train", extension=".png"):
 
 if __name__ == "__main__":
     if not os.path.exists(DATA_DIR_NEW + 'train'):
-        os.mkdir(DATA_DIR_NEW + 'train')
+        os.makedirs(DATA_DIR_NEW + 'train')
     if not os.path.exists(DATA_DIR_NEW + 'val'):
-        os.mkdir(DATA_DIR_NEW + 'val')
+        os.makedirs(DATA_DIR_NEW + 'val')
     if not os.path.exists(DATA_DIR_NEW + 'test'):
-        os.mkdir(DATA_DIR_NEW + 'test')
-    if not os.path.exists(LABELS_DIR_NEW + 'train'):
-        os.mkdir(LABELS_DIR_NEW + 'train')
-    if not os.path.exists(LABELS_DIR_NEW + 'val'):
-        os.mkdir(LABELS_DIR_NEW + 'val')
-    if not os.path.exists(LABELS_DIR_NEW + 'test'):
-        os.mkdir(LABELS_DIR_NEW + 'test')
+        os.makedirs(DATA_DIR_NEW + 'test')
+    if not os.path.exists(YOLO_LABELS_DIR_NEW + 'train'):
+        os.makedirs(YOLO_LABELS_DIR_NEW + 'train')
+    if not os.path.exists(YOLO_LABELS_DIR_NEW + 'val'):
+        os.makedirs(YOLO_LABELS_DIR_NEW + 'val')
+    if not os.path.exists(YOLO_LABELS_DIR_NEW + 'test'):
+        os.makedirs(YOLO_LABELS_DIR_NEW + 'test')
+    if not os.path.exists(KITTI_LABELS_DIR_ORIG + 'train'):
+        os.makedirs(KITTI_LABELS_DIR_ORIG + 'train')
+    if not os.path.exists(KITTI_LABELS_DIR_ORIG + 'val'):
+        os.makedirs(KITTI_LABELS_DIR_ORIG + 'val')
+    if not os.path.exists(KITTI_LABELS_DIR_ORIG + 'test'):
+        os.makedirs(KITTI_LABELS_DIR_ORIG + 'test')
 
     train_ids = np.genfromtxt(TRAIN_PATH, delimiter=",", dtype=None, encoding=None)
     val_ids = np.genfromtxt(VAL_PATH, delimiter=",", dtype=None, encoding=None)
@@ -44,6 +52,9 @@ if __name__ == "__main__":
     move_data(train_ids, DATA_DIR_ORIG, DATA_DIR_NEW, split_name="train")
     move_data(val_ids, DATA_DIR_ORIG, DATA_DIR_NEW, split_name="val")
     move_data(test_ids, DATA_DIR_ORIG, DATA_DIR_NEW, split_name="test")
-    move_data(train_ids, LABELS_DIR_ORIG, LABELS_DIR_NEW, split_name="train", extension=".txt")
-    move_data(val_ids, LABELS_DIR_ORIG, LABELS_DIR_NEW, split_name="val", extension=".txt")
-    move_data(test_ids, LABELS_DIR_ORIG, LABELS_DIR_NEW, split_name="test", extension=".txt")
+    move_data(train_ids, YOLO_LABELS_DIR_ORIG, YOLO_LABELS_DIR_NEW, split_name="train", extension=".txt")
+    move_data(val_ids, YOLO_LABELS_DIR_ORIG, YOLO_LABELS_DIR_NEW, split_name="val", extension=".txt")
+    move_data(test_ids, YOLO_LABELS_DIR_ORIG, YOLO_LABELS_DIR_NEW, split_name="test", extension=".txt")
+    move_data(train_ids, KITTI_LABELS_DIR_ORIG, KITTI_LABELS_DIR_NEW, split_name="train", extension=".txt")
+    move_data(val_ids, KITTI_LABELS_DIR_ORIG, KITTI_LABELS_DIR_NEW, split_name="val", extension=".txt")
+    move_data(test_ids, KITTI_LABELS_DIR_ORIG, KITTI_LABELS_DIR_NEW, split_name="test", extension=".txt")
