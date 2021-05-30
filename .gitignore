@@ -151,3 +151,6 @@ warn.logdebug.*
 *.tar.gz
 *.zip
 *.7z
+
+# IDE Settings
+**/.idea/**
