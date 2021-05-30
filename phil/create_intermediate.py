@@ -132,6 +132,23 @@ def make_orig_dirs(intermediate_dir):
         if not os.path.exists(new_dir):
             os.makedirs(new_dir)
 
+def make_aug_dirs(intermediate_dir):
+    for split in ['train', 'val', 'test']:
+        new_dir = INTERMEDIATE_DIR + '/images/' + split + '/aug/'
+        if not os.path.exists(new_dir):
+            os.makedirs(new_dir)
+        new_dir = INTERMEDIATE_DIR + '/images/' + split + '/aug/'
+        if not os.path.exists(new_dir):
+            os.makedirs(new_dir)
+
+    for split in ['train', 'val', 'test']:
+        new_dir = INTERMEDIATE_DIR + '/labels/' + split + '/aug/'
+        if not os.path.exists(new_dir):
+            os.makedirs(new_dir)
+        new_dir = INTERMEDIATE_DIR + '/labels/' + split + '/aug/'
+        if not os.path.exists(new_dir):
+            os.makedirs(new_dir)
+
 
 
 
@@ -287,4 +304,5 @@ if __name__ == "__main__":
     copy_orig(ORIG_DIR, INTERMEDIATE_DIR)
 
     # Copy augmented images into output dir
+    make_aug_dirs(INTERMEDIATE_DIR)     # Because we aren't using the aug for the baseline, but future scripts expect this structure
     # copy_aug(AUG_DIR, INTERMEDIATE_DIR, ORIG_DIR)
