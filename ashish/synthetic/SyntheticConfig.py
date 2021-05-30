@@ -37,6 +37,8 @@ class SyntheticConfig:
 
         self.path_mapping_file_occlusion_name_to_occlusion_id = str(config['pathOcclusionNameToOcclusionIdMapping'])
 
+        self.affixerType = str(config['affixerType'])
+
         self.probability_prioritize_objects_of_interest = float(str(config['probabilityPrioritizeObjectsOfInterest']))
         assert self.probability_prioritize_objects_of_interest <= 1.0, "probability cannot be greater than 1"
         assert self.probability_prioritize_objects_of_interest >= 0.0, "probability cannot be less than 0"
@@ -62,4 +64,7 @@ class SyntheticConfig:
         logger.info('target annotations dir path %s', self.target_dir_path_annotations)
 
         logger.info('pathOcclusionNameToOcclusionIdMapping %s', self.path_mapping_file_occlusion_name_to_occlusion_id)
+
+        logger.info('affixerType %s', self.affixerType)
+
         logger.info('probabilityPrioritizeObjectsOfInterest %f', self.probability_prioritize_objects_of_interest)

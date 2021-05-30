@@ -3,12 +3,10 @@ from typing import Tuple
 from PIL import Image
 import random
 
-from ashish.synthetic.Affixer import Affixer
-from ashish.synthetic.OriginalAffixer import OriginalAffixer
-
+from Affixer import Affixer
+from OriginalAffixer import OriginalAffixer
 
 DEFAULT_MIN_NON_OVERLAP = 0.1
-
 
 class NonSideAffixer(Affixer):
     """
