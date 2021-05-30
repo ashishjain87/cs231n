@@ -7,7 +7,7 @@ from ashish.synthetic.Affixer import Affixer
 from ashish.synthetic.OriginalAffixer import OriginalAffixer
 
 
-MIN_NON_OVERLAP = 0.1
+DEFAULT_MIN_NON_OVERLAP = 0.1
 
 
 class NonSideAffixer(Affixer):
@@ -17,14 +17,18 @@ class NonSideAffixer(Affixer):
     """
     min_percentage_of_background_height: float
     max_percentage_of_background_height: float
+    min_non_overlap: float
 
-    def  __init__(self, min_percentage_of_background_height: float = 10.0, max_percentage_of_background_height: float = 80.0) -> None:
+    def  __init__(self, min_percentage_of_background_height: float = 10.0, max_percentage_of_background_height: float = 80.0,
+                  min_non_overlap: float = DEFAULT_MIN_NON_OVERLAP) -> None:
         super().__init__()
         assert min_percentage_of_background_height > 0 and min_percentage_of_background_height < 100, "min_percentage_of_background_height cannot be negative"
         assert max_percentage_of_background_height > 0 and max_percentage_of_background_height < 100, "max_percentage_of_background_height cannot be negative"
         assert min_percentage_of_background_height <= max_percentage_of_background_height, "min_percentage_of_background_height cannot be greater than max_percentage_of_background_height"
+        assert(0 <= min_non_overlap <= 1)
         self.min_percentage_of_background_height = min_percentage_of_background_height
         self.max_percentage_of_background_height = max_percentage_of_background_height
+        self.min_non_overlap = min_non_overlap
 
     def decide_where_and_scale(
         self,
@@ -41,8 +45,8 @@ class NonSideAffixer(Affixer):
         foreground_width, foreground_height = foregroundImage.size
 
 
-        min_horiz_non_overlap = max(1, MIN_NON_OVERLAP * obj_width)
-        min_vert_non_overlap = max(1, MIN_NON_OVERLAP * obj_height)
+        min_horiz_non_overlap = max(1, self.min_non_overlap * obj_width)
+        min_vert_non_overlap = max(1, self.min_non_overlap * obj_height)
         jittered_top_left, jittered_bot_right = top_left, bottom_right
         sampled_is_top_left = random.randint(0, 2) == 0
         if sampled_is_top_left:

@@ -7,10 +7,10 @@ from ashish.synthetic.Affixer import Affixer
 from ashish.synthetic.OriginalAffixer import OriginalAffixer
 
 
-LEAST_OCCLUSION_SEVERITY = 0.25
-GREATEST_OCCLUSION_SEVERITY = 0.75
+DEFAULT_LEAST_OCCLUSION_SEVERITY = 0.25
+DEFAULT_GREATEST_OCCLUSION_SEVERITY = 0.75
 
-MAX_SCALE_MULTIPLIER = 1.8  # max scale is this much times min scale
+DEFAULT_MAX_SCALE_MULTIPLIER = 1.8  # max scale is this much times min scale
 
 
 class SideAffixer(Affixer):
@@ -18,6 +18,25 @@ class SideAffixer(Affixer):
     Affixes foreground images to background images such that at least one object's modal box differs because of the
     new occlusion.
     """
+    least_occlusion_severity: float
+    greatest_occlusion_severity: float
+    max_scale_multiplier: float
+
+    def __init__(self, least_occlusion_severity: float = DEFAULT_LEAST_OCCLUSION_SEVERITY,
+                 greatest_occlusion_severity: float = DEFAULT_GREATEST_OCCLUSION_SEVERITY,
+                 max_scale_multiplier: float = DEFAULT_MAX_SCALE_MULTIPLIER):
+        super().__init__()
+        self.least_occlusion_severity = least_occlusion_severity
+        self.greatest_occlusion_severity = greatest_occlusion_severity
+        self.max_scale_multiplier = max_scale_multiplier
+        self.assert_constructor_params()
+
+    def assert_constructor_params(self):
+        assert(0 <= self.least_occlusion_severity <= 1)
+        assert(0 <= self.greatest_occlusion_severity <= 1)
+        assert(self.least_occlusion_severity <= self.greatest_occlusion_severity)
+        assert(self.max_scale_multiplier >= 1)
+
 
     def decide_where_and_scale(
         self,
@@ -25,7 +44,7 @@ class SideAffixer(Affixer):
         backgroundAnnotations: np.ndarray,
         foregroundImage: Image
     ) -> Tuple[Tuple[int, int], float]:
-        occlusion_severity = random.uniform(LEAST_OCCLUSION_SEVERITY, GREATEST_OCCLUSION_SEVERITY)
+        occlusion_severity = random.uniform(self.least_occlusion_severity, self.greatest_occlusion_severity)
 
         object_idx = OriginalAffixer.randomly_choose_object_of_interest(len(backgroundAnnotations))
         top_left, bottom_right = OriginalAffixer.get_top_left_bottom_right_coordinates(backgroundAnnotations, object_idx, backgroundImage)
@@ -47,7 +66,7 @@ class SideAffixer(Affixer):
                 occluder_edge = bottom_right[0] - occlusion_distance
 
             min_occluder_scale = max(occlusion_distance/foreground_width, (bottom_right[1] - top_left[1])/foreground_height)
-            max_occluder_scale = MAX_SCALE_MULTIPLIER * min_occluder_scale
+            max_occluder_scale = self.max_scale_multiplier * min_occluder_scale
 
             occluder_scale = random.uniform(min_occluder_scale, max_occluder_scale)
 
@@ -80,7 +99,7 @@ class SideAffixer(Affixer):
 
             min_occluder_scale = max(occlusion_distance / foreground_height,
                                      (bottom_right[0] - top_left[0]) / foreground_width)
-            max_occluder_scale = MAX_SCALE_MULTIPLIER * min_occluder_scale
+            max_occluder_scale = self.max_scale_multiplier * min_occluder_scale
 
             occluder_scale = random.uniform(min_occluder_scale, max_occluder_scale)
 
