@@ -5,6 +5,7 @@ import glob
 import yaml
 import math
 import numpy as np
+from tqdm import tqdm
 import ImagePath
 import Annotation
 from PIL import Image, ImageOps, ImageDraw
@@ -104,17 +105,11 @@ def get_image_label_paths(folderPath, imageFolderName = "images", labelFolderNam
 
     return dict
 
-def main():
-    # Logging Setup
-    setup_logging()
+def process_occlusion_class(path_dir, output_path_dir):
     logger = logging.getLogger(__name__)
-    logger.info('Started')
 
-    # Loading inputs
-    path_dir = "/Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/output/fixed/PaperBag" # Specify path to high-level occlusion folder here
     dict_image_label_paths = get_image_label_paths(path_dir)
 
-    output_path_dir = "/Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/debug/fixed/PaperBag" # Specify path to high-level occlusion folder here
     if not os.path.isdir(output_path_dir):
         os.makedirs(output_path_dir)
         logger.info("Created target directory %s", output_path_dir)
@@ -129,6 +124,31 @@ def main():
         output_path = os.path.join(output_path_dir, output_filename)
         drawnImage.save(output_path)
         logger.debug("Saved drawn image for key %s in %s", key, output_path)
+
+def main():
+    # Logging Setup
+    setup_logging()
+    logger = logging.getLogger(__name__)
+    logger.info('Started')
+
+    # Output super directory 
+    path_super_dir_output = "/Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/debug/train" # Specify path to labels folder here
+
+    # Loading inputs
+    path_super_dir = "/Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/output/train" # Specify path to labels folder here
+    subdirs = ImagePath.get_immediate_subdirectories(path_super_dir) # train, val, test
+    logger.info("Number of subdirectories found: %i", len(subdirs))
+
+    for subdir in tqdm(subdirs, desc="Overall"):
+        logger.info("Proessing subdir %s", subdir)
+        path_subdir = os.path.join(path_super_dir, subdir)
+
+        path_subdir_output = os.path.join(path_super_dir_output, subdir) 
+        if not os.path.isdir(path_subdir_output):
+            os.makedirs(path_subdir_output)
+            logger.info("Created target directory %s", path_subdir_output)
+
+        process_occlusion_class(path_subdir, path_subdir_output)
 
     logger.info('Finished')
 
