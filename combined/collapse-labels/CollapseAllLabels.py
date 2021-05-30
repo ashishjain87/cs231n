@@ -3,6 +3,7 @@ import logging.config
 import os
 import glob
 import yaml
+from tqdm import tqdm
 
 def setup_logging(logging_config_path: str = 'logging.yaml', default_level: int = logging.INFO) -> None:
     if os.path.exists(logging_config_path):
@@ -35,14 +36,26 @@ def main():
     logger.info("Number of subdirectories found: %i", len(subdirs))
 
     label_input_ouput_paths_dict = {}
-    for subdir in subdirs:
+    for subdir in tqdm(subdirs, desc="Traverse folders"):
         logger.info("Proessing subdir %s", subdir)
         path_subdir = os.path.join(path_super_dir, subdir)
         subsubdirs = get_immediate_subdirectories(path_subdir) # modal, amodal 
         logger.info("Number of subsubdirectories found: %i", len(subsubdirs))
+
+        path_subdir_output = os.path.join(path_super_dir_output, subdir) 
+        if not os.path.isdir(path_subdir_output):
+            os.makedirs(path_subdir_output)
+            logger.info("Created target directory %s", path_subdir_output)
+
         for subsubdir in subsubdirs:
             logger.info("Processing subsubdir %s", subsubdir)
             path_subsubdir = os.path.join(path_subdir, subsubdir)
+
+            path_subsubdir_output = os.path.join(path_subdir_output, subsubdir) 
+            if not os.path.isdir(path_subsubdir_output):
+                os.makedirs(path_subsubdir_output)
+                logger.info("Created target directory %s", path_subsubdir_output)
+
             for valid_extension in valid_extensions:
                 search_path = path_subsubdir + "/" + "*." + valid_extension
                 logger.debug("Searching %s using %s", path_subsubdir, search_path)  
@@ -53,7 +66,7 @@ def main():
                     logger.debug("Input: %s, Output: %s", file_path, output_file_path)
 
     logger.info("Number of labels found: %i", len(label_input_ouput_paths_dict))
-    for input_file_path in label_input_ouput_paths_dict:
+    for input_file_path in tqdm(label_input_ouput_paths_dict, desc="Process files"):
         output_file_path = label_input_ouput_paths_dict[input_file_path]
         logger.debug("Input: %s, Output: %s", input_file_path, output_file_path)
 
