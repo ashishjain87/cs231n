@@ -114,10 +114,11 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--in-root', type=str, help="top-level dir where input data is stored")
     parser.add_argument('--out-root', type=str, help="top-level dir where output data should be stored")
+    parser.add_argument('--split-train-set', action='store_true', help="set this if there are 2 training sets (train1 and train2)")
     return parser.parse_args()
 
 
-def collect_images_into_final_sets(path_to_top_level_input_dir: str, path_to_top_level_output_dir: str):
+def collect_images_into_final_sets(path_to_top_level_input_dir: str, path_to_top_level_output_dir: str, split_train_set: bool):
     # As a user of this, consider setting a random seed
     # random.seed(42)
 
@@ -125,8 +126,13 @@ def collect_images_into_final_sets(path_to_top_level_input_dir: str, path_to_top
     os.system(f"mkdir {path_to_top_level_output_dir}/images")
     os.system(f"mkdir {path_to_top_level_output_dir}/labels")
 
-    train_images = get_chosen_images(f"{path_to_top_level_input_dir}/images/train", False, 0.4)
-    populate_out_dir(train_images, path_to_top_level_input_dir, path_to_top_level_output_dir, "train")
+    if not split_train_set:
+        train_images = get_chosen_images(f"{path_to_top_level_input_dir}/images/train", False, 0.4)
+        populate_out_dir(train_images, path_to_top_level_input_dir, path_to_top_level_output_dir, "train")
+    else:
+        for setname in ["train1", "train2"]:
+            train_images = get_chosen_images(f"{path_to_top_level_input_dir}/images/{setname}", False, 0.4)
+            populate_out_dir(train_images, path_to_top_level_input_dir, path_to_top_level_output_dir, setname)
 
     for setname in ["val", "test"]:
         train_images = get_chosen_images(f"{path_to_top_level_input_dir}/images/{setname}", True, 0.4)
@@ -137,4 +143,4 @@ if __name__ == "__main__":
     args = get_args()
     in_path = args.in_root
     out_path = args.out_root
-    collect_images_into_final_sets(in_path, out_path)
+    collect_images_into_final_sets(in_path, out_path, args.split_train_set)
