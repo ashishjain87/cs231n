@@ -33,7 +33,6 @@ def get_id_from_filename(dir_entry_filename):
 def get_filename_from_name(dir_name, image_name="000001", extension=".txt"):
     return os.path.join(os.path.dirname(__file__), dir_name + image_name + extension)
 
-
 def get_filename_without_ext(path):
     filename_with_ext = os.path.basename(path)
     list = os.path.splitext(filename_with_ext)
@@ -149,7 +148,12 @@ def clean_kitti(kitti_label):
         kitti_label = np.array([kitti_label])
     kitti_label = list(filter(lambda entry: entry[0] != 'DontCare', kitti_label))
     kitti_label = list(filter(lambda entry: entry[4] <= IMG_WIDTH and entry[5] <= IMG_HEIGHT, kitti_label))
-    kitti_label = [[get_class_idx_from_entry(entry)] + list(entry)[1:] for entry in kitti_label]
+    kitti_label = np.array([[get_class_idx_from_entry(entry)] + list(entry)[1:] for entry in kitti_label])
+    for idx, entry in enumerate(kitti_label):
+        if entry[6] > IMG_WIDTH: 
+            kitti_label[idx, 6] = IMG_WIDTH
+        if entry[7] > IMG_HEIGHT:
+            kitti_label[idx, 7] = IMG_HEIGHT
     return np.array(kitti_label)
 
 def clean_yolo(yolo_label):
@@ -197,7 +201,7 @@ def convertToYoloBBox(bbox):
     return (x, y, w, h)
 
 
-def kitti_to_yolo(kitti_label: np.ndarray) -> np.ndarray:
+def kitti_label_to_yolo_label(kitti_label: np.ndarray) -> np.ndarray:
     yolo_label = []
     for annotation in kitti_label:
         kitti_bbox = annotation[4:8]
@@ -209,6 +213,7 @@ def kitti_to_yolo(kitti_label: np.ndarray) -> np.ndarray:
         yolo_label.append(yolo_annotation)
     
     return np.array(yolo_label)
+
 
 if __name__ == "__main__":
     # EXAMPLE BBOX
