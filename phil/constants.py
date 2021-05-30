@@ -29,4 +29,7 @@ VehicleInts = [0,1,2,6]
 OcclusionState = {   'FullyVisible': 0,
    'PartlyOccluded': 1,
    'LargelyOccluded': 2,
-   'Unknown': 3 }
+   'Unknown': 3, 
+   'Occluder': -10}
+
+OCCLUDER_OCCLUSION_STATE = -10
