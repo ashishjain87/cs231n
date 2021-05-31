@@ -11,6 +11,7 @@ from PIL import Image, ImageOps
 from Affixer import Affixer
 from FixedAffixer import FixedAffixer
 from OriginalAffixer import OriginalAffixer # lots of helper static methods which may prove useful inside your Affixer
+from NoValueRegionAffixer import NoValueRegionAffixer
 
 def setup_logging(logging_config_path: str = 'logging.yaml', default_level: int = logging.INFO) -> None:
     if os.path.exists(logging_config_path):
@@ -27,8 +28,8 @@ def main():
     logger.info('Started')
 
     # Loading inputs
-    backgroundImagePath = "input/background/images/000016.png" 
-    backgroundAnnotationPath = "input/background/labels/000016.txt"
+    backgroundImagePath = "input/background-clipped/images/000008.png"
+    backgroundAnnotationPath = "input/background-clipped/labels/000008.txt"
     foregroundImagePath = "input/foreground/single-shot/train/PlasticBag/PlasticBag04_122x150.png"
 
     backgroundImage = Image.open(backgroundImagePath)
@@ -36,7 +37,7 @@ def main():
     backgroundAnnotation = Annotation.read_background_annotation(backgroundAnnotationPath) 
     
     # Run the affixer
-    affixer: Affixer = FixedAffixer() # Your code goes here!
+    affixer: Affixer = NoValueRegionAffixer() # Your code goes here!
     (centerPoint, scale) = affixer.decide_where_and_scale(backgroundImage, backgroundAnnotation, foregroundImage)
     centerX, centerY = centerPoint
     logger.info("centerX: %s, centerY: %s, scale: %s", centerX, centerY, scale)
