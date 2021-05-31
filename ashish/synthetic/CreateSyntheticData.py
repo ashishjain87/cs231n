@@ -323,6 +323,14 @@ def process_original_occlusion_image(
 
     return (image_annotation_collection, image_info_collection, cur_image_id)
 
+def try_skip_image(probability_skip_background_image: float) -> bool: 
+    logger = logging.getLogger(__name__)
+
+    randomNumber = random.random()
+    logger.debug('randomNumber: %f', randomNumber)
+
+    return randomNumber < probability_skip_background_image
+
 def create_synthetic_images_for_all_images_under_current_folders(
     subdir,
     background_dir_path_images,
@@ -334,7 +342,8 @@ def create_synthetic_images_for_all_images_under_current_folders(
     cur_image_id,
     occlusion_name_occlusion_id_dict,
     probability_prioritize_objects_of_interest,
-    affixerType
+    affixerType,
+    probability_skip_background_image
 ):
     logger = logging.getLogger(__name__)
 
@@ -391,7 +400,12 @@ def create_synthetic_images_for_all_images_under_current_folders(
 
     for foreground_image_path in tqdm.tqdm(foreground_image_paths, desc=subdir, leave=True):
         logger.debug("Processing foreground image: %s", foreground_image_path)
-        for background_image_path in background_image_paths:
+        foreground_filename_without_ext = str(get_filename_without_ext(foreground_image_path))
+        for background_image_path in tqdm.tqdm(background_image_paths, desc=foreground_filename_without_ext, leave=False):
+            shouldSkip: bool = try_skip_image(probability_skip_background_image)
+            if shouldSkip:
+                logger.debug("Skipping background image: %s", background_image_path) 
+                continue
             logger.debug("Processing background image: %s", background_image_path)
             background_annotation_file_path = get_background_annotation_file_path(background_image_path, background_dir_path_annotations)
             (image_annotations, image_infos, cur_image_id) = process_original_occlusion_image(
@@ -441,7 +455,8 @@ def create_synthetic_images_for_all_direct_subfolders(syntheticConfig, occlusion
                 cur_image_id, \
                 occlusion_name_occlusion_id_dict, \
                 syntheticConfig.probability_prioritize_objects_of_interest, \
-                syntheticConfig.affixerType) 
+                syntheticConfig.affixerType, \
+                syntheticConfig.probability_skip_background_image) 
         logger.info('Subdirectory %s processed', subdir)
         logger.info('Number of images created for %s is %s', subdir, len(image_infos))
         logger.info('Number of annotations created for %s is %s', subdir, len(image_annotations))
