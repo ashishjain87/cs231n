@@ -5,6 +5,7 @@ import glob
 import yaml
 import numpy as np
 from tqdm import tqdm
+import argparse
 
 KITTI_CATEGORY_TO_COLLAPSED_CATEGORY = {3: 1, 4: 1, 5: 1, 0: 0, 1: 0, 2: 0, 6: 0, 7: 2, 8: 2}
 CLASS_NAMES_MAP = {0: "vehicle", 1: "person", 2: "misc"}
@@ -16,6 +17,14 @@ def setup_logging(logging_config_path: str = 'logging.yaml', default_level: int 
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=default_level)
+
+def get_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--output-labels-dir', type=str, required=True, help="output super directory")
+    parser.add_argument('--input-labels-dir', type=str, required=True, help="input super directory")
+
+    return parser.parse_args()
 
 def get_immediate_subdirectories(super_dir):
     return [name for name in os.listdir(super_dir) if os.path.isdir(os.path.join(super_dir, name))]
@@ -44,16 +53,18 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info('Started')
 
+    args = get_args()
+
     valid_extensions = [
         "txt",
         "TXT",
-    ] 
+    ]
 
-    # Output super directory 
-    path_super_dir_output = "collapsed_labels" # Specify path to labels folder here
+    # Output super directory
+    path_super_dir_output = args.output_labels_dir
 
     # Loading inputs
-    path_super_dir = "labels" # Specify path to labels folder here
+    path_super_dir = args.input_labels_dir
     subdirs = get_immediate_subdirectories(path_super_dir) # train, val, test
     logger.info("Number of subdirectories found: %i", len(subdirs))
 
@@ -61,10 +72,10 @@ def main():
     for subdir in tqdm(subdirs, desc="Traverse folders"):
         logger.info("Proessing subdir %s", subdir)
         path_subdir = os.path.join(path_super_dir, subdir)
-        subsubdirs = get_immediate_subdirectories(path_subdir) # modal, amodal 
+        subsubdirs = get_immediate_subdirectories(path_subdir) # modal, amodal
         logger.info("Number of subsubdirectories found: %i", len(subsubdirs))
 
-        path_subdir_output = os.path.join(path_super_dir_output, subdir) 
+        path_subdir_output = os.path.join(path_super_dir_output, subdir)
         if not os.path.isdir(path_subdir_output):
             os.makedirs(path_subdir_output)
             logger.info("Created target directory %s", path_subdir_output)
@@ -73,14 +84,14 @@ def main():
             logger.info("Processing subsubdir %s", subsubdir)
             path_subsubdir = os.path.join(path_subdir, subsubdir)
 
-            path_subsubdir_output = os.path.join(path_subdir_output, subsubdir) 
+            path_subsubdir_output = os.path.join(path_subdir_output, subsubdir)
             if not os.path.isdir(path_subsubdir_output):
                 os.makedirs(path_subsubdir_output)
                 logger.info("Created target directory %s", path_subsubdir_output)
 
             for valid_extension in valid_extensions:
                 search_path = path_subsubdir + "/" + "*." + valid_extension
-                logger.debug("Searching %s using %s", path_subsubdir, search_path)  
+                logger.debug("Searching %s using %s", path_subsubdir, search_path)
                 for file_path in glob.glob(search_path):
                     filename_with_ext = os.path.basename(file_path)
                     output_file_path = os.path.join(path_super_dir_output, subdir, subsubdir, filename_with_ext)
@@ -95,6 +106,7 @@ def main():
         logger.debug("Generated Output: %s", output_file_path)
 
     logger.info('Finished')
+
 
 if __name__ == '__main__':
     main()

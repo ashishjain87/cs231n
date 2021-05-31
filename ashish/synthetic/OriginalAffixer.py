@@ -12,8 +12,8 @@ class OriginalAffixer(Affixer):
     def  __init__(self, probability_prioritize_objects_of_interest: float, min_percentage_of_background_height: float = 10.0, max_percentage_of_background_height: float = 80.0) -> None:
         super().__init__()
         self.probability_prioritize_objects_of_interest = probability_prioritize_objects_of_interest
-        assert min_percentage_of_background_height > 0 and min_percentage_of_background_height < 100, "min_percentage_of_background_height cannot be negative"
-        assert max_percentage_of_background_height > 0 and max_percentage_of_background_height < 100, "max_percentage_of_background_height cannot be negative"
+        assert min_percentage_of_background_height > 0 and min_percentage_of_background_height < 100, "min_percentage_of_background_height should be between 0 and 100"
+        assert max_percentage_of_background_height > 0 and max_percentage_of_background_height < 100, "max_percentage_of_background_height should be between 0 and 100"
         assert min_percentage_of_background_height <= max_percentage_of_background_height, "min_percentage_of_background_height cannot be greater than max_percentage_of_background_height"
         self.min_percentage_of_background_height = min_percentage_of_background_height
         self.max_percentage_of_background_height = max_percentage_of_background_height

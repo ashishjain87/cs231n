@@ -23,6 +23,6 @@ threshold: 250
 
 probabilityPrioritizeObjectsOfInterest: 0.5
 
-affixerType: OriginalAffixer
+affixerType: NoValueRegionAffixer
 
-probabilitySkipBackgroundImage: 0.5
+probabilitySkipBackgroundImage: 0.0

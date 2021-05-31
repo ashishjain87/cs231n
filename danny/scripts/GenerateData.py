@@ -21,14 +21,14 @@ def main():
     args = get_args()
     configs = os.listdir(args.configs_dir)
 
-    if not os.exists("CreateSyntheticData.py"):
+    if not os.path.exists("CreateSyntheticData.py"):
         print("Change to a directory containing 'CreateSyntheticData.py' please.")
         return
 
     print(f"{len(configs)} config files found. Generating {len(configs)} datasets.")
 
     for config in configs:
-        configpath = f"{args.config_dir}/{config}"
+        configpath = f"{args.configs_dir}/{config}"
 
         os.system(f"cp {configpath} {args.target_config_path}")
         try:
@@ -36,3 +36,7 @@ def main():
         except:
             print(f"Encountered some error while generating dataset using {configpath}, moving on to next config",
                   file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()
