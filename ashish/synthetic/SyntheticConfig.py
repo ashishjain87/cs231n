@@ -42,6 +42,10 @@ class SyntheticConfig:
         self.probability_prioritize_objects_of_interest = float(str(config['probabilityPrioritizeObjectsOfInterest']))
         assert self.probability_prioritize_objects_of_interest <= 1.0, "probability cannot be greater than 1"
         assert self.probability_prioritize_objects_of_interest >= 0.0, "probability cannot be less than 0"
+
+        self.probability_skip_background_image = float(str(config['probabilitySkipBackgroundImage']))
+        assert self.probability_skip_background_image <= 1.0, "probability cannot be greater than 1"
+        assert self.probability_skip_background_image >= 0.0, "probability cannot be less than 0"
         
     def log(self):
         logger = logging.getLogger(__name__)
@@ -68,3 +72,4 @@ class SyntheticConfig:
         logger.info('affixerType %s', self.affixerType)
 
         logger.info('probabilityPrioritizeObjectsOfInterest %f', self.probability_prioritize_objects_of_interest)
+        logger.info('probabilitySkipBackgroundImage %f', self.probability_skip_background_image) 
