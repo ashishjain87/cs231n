@@ -477,6 +477,7 @@ def create_synthetic_images_for_all_direct_subfolders(syntheticConfig, occlusion
         image_annotation_collection.extend(image_annotations)
         image_info_collection.extend(image_infos)
 
+    logger.info('cur_image_id is %s', cur_image_id) 
     logger.info('Total number of images created is %s', len(image_info_collection))
     logger.info('Total number of annotations created is %s', len(image_annotation_collection))
 
