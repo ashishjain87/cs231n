@@ -2,18 +2,18 @@ appName: CreateSyntheticData
 
 background:
         pathBackgroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/background/000002_10.png
-        pathBackgroundDir: /home/schwartzd/datasets/raw/original_clipped/test
+        pathBackgroundDir: /home/philip/datasets/raw/original_clipped/test
         imagesDirName: images
         annotationsDirName: labels
 
 pathForegroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/plasticbags/reduced/PlasticBag01_100x100.jpeg
 pathForegroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/basketballs/debug/Basketball
-pathForegroundSuperDir: /home/schwartzd/project/cs231n/ashish/synthetic/input/foreground/single-shot-original-size/different-class/test
+pathForegroundSuperDir: /home/philip/project/cs231n/ashish/synthetic/input/foreground/single-shot-original-size/different-class/test
 
-pathOcclusionNameToOcclusionIdMapping: /home/schwartzd/project/cs231n/ashish/synthetic/input/occlusion-name-to-occlusion-id.csv
+pathOcclusionNameToOcclusionIdMapping: /home/philip/project/cs231n/ashish/synthetic/input/occlusion-name-to-occlusion-id.csv
 
 output:
-        pathTargetDir: /home/schwartzd/datasets/intermediate/augmented/test-side-affixer-different-class
+        pathTargetDir: /home/philip/datasets/intermediate/augmented/test-side-affixer-different-class
         imagesDirName: images
         annotationsDirName: labels
 

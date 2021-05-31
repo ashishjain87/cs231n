@@ -2,26 +2,27 @@ appName: CreateSyntheticData
 
 background:
         pathBackgroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/background/000002_10.png
-        pathBackgroundDir: /home/schwartzd/datasets/raw/original_clipped/train
+        pathBackgroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/background-clipped
         imagesDirName: images
         annotationsDirName: labels
 
 pathForegroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/plasticbags/reduced/PlasticBag01_100x100.jpeg
 pathForegroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/basketballs/debug/Basketball
-pathForegroundSuperDir: /home/schwartzd/project/cs231n/ashish/synthetic/input/foreground/single-shot-original-size/same-classes-same-images/train
+pathForegroundSuperDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/single-shot-original-size/same-classes-same-images/val
 
-pathOcclusionNameToOcclusionIdMapping: /home/schwartzd/project/cs231n/ashish/synthetic/input/occlusion-name-to-occlusion-id.csv
+pathOcclusionNameToOcclusionIdMapping: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/occlusion-name-to-occlusion-id.csv
 
 output:
-        pathTargetDir: /home/schwartzd/datasets/intermediate/augmented/train-side-affixer
+        pathTargetDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/output/val/OriginalAffixer2
         imagesDirName: images
         annotationsDirName: labels
 
-StartImageId: 1000000
+StartImageId: 2000000
 
 threshold: 250
 
 probabilityPrioritizeObjectsOfInterest: 0.5
-probabilitySkipBackgroundImage: 0.5
 
-affixerType: SideAffixer
+affixerType: OriginalAffixer
+
+probabilitySkipBackgroundImage: 0.5
