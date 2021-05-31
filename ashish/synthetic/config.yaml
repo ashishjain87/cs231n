@@ -2,18 +2,18 @@ appName: CreateSyntheticData
 
 background:
         pathBackgroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/background/000002_10.png
-        pathBackgroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/background-clipped
+        pathBackgroundDir: /home/philip/project/cs231n/ashish/synthetic/input/background-clipped
         imagesDirName: images
         annotationsDirName: labels
 
 pathForegroundFile: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/plasticbags/reduced/PlasticBag01_100x100.jpeg
 pathForegroundDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/basketballs/debug/Basketball
-pathForegroundSuperDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/foreground/single-shot-original-size/same-classes-same-images/val
+pathForegroundSuperDir: /home/philip/project/cs231n/ashish/synthetic/input/foreground/single-shot-original-size/same-classes-same-images/train
 
-pathOcclusionNameToOcclusionIdMapping: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/occlusion-name-to-occlusion-id.csv
+pathOcclusionNameToOcclusionIdMapping: /home/philip/project/cs231n/ashish/synthetic/input/occlusion-name-to-occlusion-id.csv
 
 output:
-        pathTargetDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/output/val/NoValueRegionAffixer
+        pathTargetDir: /home/philip/project/cs231n/ashish/synthetic/output/train
         imagesDirName: images
         annotationsDirName: labels
 
