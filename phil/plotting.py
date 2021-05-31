@@ -40,18 +40,21 @@ def show_bbox_yolo_modal_amodal(amodal_label_path: str, modal_label_path: str, i
     ax[1].imshow(image)
 
     # Draw each bounding box
+    TEXT_OFFSET = -10
     for idx in range(len(amodal_label)):
         amodal_annotation = amodal_label[idx]
         (aleft, atop, anew_width, anew_height) = rel_to_absolute_label(amodal_annotation)
         arect = patches.Rectangle((aleft, atop), anew_width, anew_height, linewidth=1, edgecolor='r', facecolor='none')
         ax[0].add_patch(arect)
-        ax[0].text(aleft, atop, idx, backgroundcolor='w', fontsize='xx-small')
+        ax[0].text(aleft+TEXT_OFFSET, atop+TEXT_OFFSET, idx, backgroundcolor='w', fontsize='xx-small')
+        ax[0].set_title('Amodal Bounding Boxes')
         
         modal_annotation = modal_label[idx]
         (mleft, mtop, mnew_width, mnew_height) = rel_to_absolute_label(modal_annotation)
-        mrect = patches.Rectangle((mleft, atop), mnew_width, mnew_height, linewidth=1, edgecolor='b', facecolor='none')
+        mrect = patches.Rectangle((mleft, mtop), mnew_width, mnew_height, linewidth=1, edgecolor='b', facecolor='none')
         ax[1].add_patch(mrect)
-        ax[1].text(mleft, mtop, idx, backgroundcolor='w', fontsize='xx-small')
+        ax[1].text(mleft+TEXT_OFFSET, mtop+TEXT_OFFSET, idx, backgroundcolor='w', fontsize='xx-small')
+        ax[1].set_title('Modal Bounding Boxes')
 
     plt.show()
 
@@ -62,7 +65,12 @@ if __name__ == "__main__":
     # label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/aug/Basketball/amodal/000008.annotated.28.txt')
     # show_bbox_yolo_paths(label_filepath, image_filepath)
     
-    image_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/images/train-SideAffixerSameClassSameImage/aug/Basketball/000008.28.png')
-    amodal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/aug/Basketball/amodal/000008.annotated.28.txt')
-    modal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/aug/Basketball/modal/000008.annotated.28.txt')
+    # image_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/images/train-SideAffixerSameClassSameImage/aug/Basketball/000008.28.png')
+    # amodal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/aug/Basketball/amodal/000008.annotated.28.txt')
+    # modal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/aug/Basketball/modal/000008.annotated.28.txt')
+    # show_bbox_yolo_modal_amodal(amodal_label_filepath, modal_label_filepath, image_filepath)
+    
+    image_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/images/train-SideAffixerSameClassSameImage/orig/000010.png')
+    amodal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/orig/amodal/000010.txt')
+    modal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/orig/modal/000010.txt')
     show_bbox_yolo_modal_amodal(amodal_label_filepath, modal_label_filepath, image_filepath)
