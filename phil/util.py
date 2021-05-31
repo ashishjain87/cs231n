@@ -188,8 +188,8 @@ def convertToYoloBBox(bbox):
     
     if bbox[0] > IMG_WIDTH or bbox[1] > IMG_HEIGHT:
         return None
-    right = min(bbox[2], 1224)
-    bottom = min(bbox[3], 370)
+    right = min(bbox[2], IMG_WIDTH)
+    bottom = min(bbox[3], IMG_HEIGHT)
     x = (bbox[0] + right) / 2.0
     y = (bbox[1] + bottom) / 2.0
     w = right - bbox[0]

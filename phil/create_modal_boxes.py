@@ -61,8 +61,8 @@ def label2_infront(label1, label2):
     same_class = (obj1_class == obj2_class)
     similar_class = (obj1_class in PeopleInts and obj2_class in PeopleInts) or (obj1_class in VehicleInts and obj2_class in VehicleInts)
 
-    obj2_taller_same_class = same_class and ((bottom2-top2) > (bottom1-top1))
-    obj2_taller_similar_class = similar_class and ((bottom2-top2) > (bottom1-top1))
+    obj2_taller_same_class = same_class and ((bottom2-top2) >= (bottom1-top1))
+    obj2_taller_similar_class = similar_class and ((bottom2-top2) >= (bottom1-top1))
     return obj1_more_occluded or obj2_taller_similar_class
     
 def generate_modal_label(amodal_kitti_label: np.ndarray, modal_amodal_different_count: List[int]) -> Tuple[np.ndarray, np.ndarray, int]:
@@ -112,7 +112,6 @@ def generate_modal_label(amodal_kitti_label: np.ndarray, modal_amodal_different_
                         assert new_right >= new_left, f"Negative width for label {label1_idx+1} due to overlap with label {label2_idx+1}"
 
                 if list(modal_label1_coords) != list(label1_coords):
-                    # TODO: append all, record how many are different
                     modal_amodal_different_count[0] += 1
 
                 modal_label = list(label1[:4]) + list(modal_label1_coords) + list(label1[8:])
