@@ -22,6 +22,6 @@ StartImageId: 2000000
 threshold: 250
 
 probabilityPrioritizeObjectsOfInterest: 0.5
-probabilitySkipBackgroundImage: 1.0
+probabilitySkipBackgroundImage: 0.5
 
 affixerType: OriginalAffixer
