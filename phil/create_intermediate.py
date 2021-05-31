@@ -164,20 +164,22 @@ def copy_orig(orig_data_dir, intermediate_dir, aug_data_dir_path):
         orig_labels_yolo.remove('.DS_Store')
     
     print(f"[{datetime.now()}] Starting original images")
-    img_count = 0
     modal_amodal_different_counts = {}  # { "train": List[int, int], "val": List[int, int], "test": List[int, int] }
     for split in os.listdir(aug_data_dir_path):
         if split.find(".DS_Store") != -1:
             continue
+        
+        img_count = 0
         print(f"[{datetime.now()}] Starting {split}")
         split_type = get_split_type(split)
-        
+
         orig_images_split_path = orig_images_path + split_type + '/'
         # orig_labels_yolo_split_path = orig_labels_path_yolo + split + '/'
         orig_labels_kitti_split_path = orig_labels_path_kitti + split_type + '/'
         
         modal_amodal_different_count = [0,0]
-        for image_filename in os.listdir(orig_images_split_path):
+        image_filenames = os.listdir(orig_images_split_path)
+        for image_filename in image_filenames: 
             if image_filename.find(".DS_Store") != -1:
                 continue
 
@@ -211,7 +213,7 @@ def copy_orig(orig_data_dir, intermediate_dir, aug_data_dir_path):
             check_modal_amodal(image_name, modal_yolo_label, amodal_yolo_label)
             img_count += 1
             if img_count % 100 == 0:
-                print(f"[{datetime.now()}] Finished {img_count} images")
+                print(f"[{datetime.now()}] Finished {img_count} images of {len(image_filenames)}")
             
         modal_amodal_different_counts[split] = modal_amodal_different_count
         
@@ -222,7 +224,6 @@ def copy_orig(orig_data_dir, intermediate_dir, aug_data_dir_path):
 
 
 def copy_aug(aug_data_dir_path, intermediate_dir, orig_data_dir):
-    img_count = 0
     print(f"[{datetime.now()}] Starting to copy augmented images")
     modal_amodal_different_counts = {}  # { "train": List[int, int], "val": List[int, int], "test": List[int, int] }
 
@@ -233,12 +234,14 @@ def copy_aug(aug_data_dir_path, intermediate_dir, orig_data_dir):
         print(f"[{datetime.now()}] Starting {split}")
         split_path = aug_data_dir_path + split + '/'
         modal_amodal_different_count = [0,0]
+        img_count = 0
 
         occlusion_classes = os.listdir(split_path)
         for occlusion_class in occlusion_classes:
             if occlusion_class.find(".DS_Store") != -1:
                 continue
 
+            print(f"[{datetime.now()}] Starting {occlusion_class}")
             occlusion_class_path = split_path + occlusion_class + '/'
             images_dir_path = occlusion_class_path + 'images/'
             labels_dir_path = occlusion_class_path + 'labels/'
@@ -302,9 +305,9 @@ def copy_aug(aug_data_dir_path, intermediate_dir, orig_data_dir):
                 check_modal_amodal(image_name, modal_yolo_label, amodal_yolo_label)
                 img_count += 1
                 if img_count % 100 == 0:
-                    print(f"[{datetime.now()}] Finished {img_count} images")
+                    print(f"[{datetime.now()}] Finished {img_count} images of {len(image_filenames)}")
 
-        modal_amodal_different_counts[split_type] = modal_amodal_different_count
+        modal_amodal_different_counts[split] = modal_amodal_different_count
     
     print(f"[{datetime.now()}] Augmented modal-amodal-different Count: ", modal_amodal_different_counts)
     print(f"[{datetime.now()}] Finished augmented images")
