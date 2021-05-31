@@ -83,22 +83,18 @@ class NonSideAffixer(Affixer):
 
         if jitter_type == 0:
             # sampled point is top left
-            print("top left")
             centerx = int(sampled_x + scale*foreground_width/2)
             centery = int(sampled_y + scale*foreground_height/2)
         elif jitter_type == 1:
             # sampled point is bottom right
-            print("bottom right")
             centerx = int(sampled_x - scale*foreground_width/2)
             centery = int(sampled_y - scale*foreground_height/2)
         elif jitter_type == 2:
             # sampled point is bottom left
-            print("bottom left")
             centerx = int(sampled_x + scale * foreground_width / 2)
             centery = int(sampled_y - scale * foreground_height / 2)
         else:
             # sampled point is top right
-            print("top right")
             centerx = int(sampled_x - scale * foreground_width / 2)
             centery = int(sampled_y + scale * foreground_height / 2)
 
