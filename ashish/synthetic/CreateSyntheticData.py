@@ -29,6 +29,7 @@ from Affixer import Affixer
 from OriginalAffixer import OriginalAffixer
 from SideAffixer import SideAffixer
 from NonSideAffixer import NonSideAffixer
+from NoValueRegionAffixer import NoValueRegionAffixer
 
 from ImagePath import *
 from Annotation import *
@@ -182,14 +183,17 @@ def determine_scaled_size_as_per_original_propotions(image, intendedSquareImageS
 def create_affixer(option: str, probability_prioritize_objects_of_interest: float) -> Affixer:
     logger = logging.getLogger(__name__)
     if option == "SideAffixer": 
-        logger.info("SideAffixer being used!")
+        logger.debug("SideAffixer being used!")
         return SideAffixer()
     elif option == "NonSideAffixer":
-        logger.info("NonSideAffixer being used!")
+        logger.debug("NonSideAffixer being used!")
         return NonSideAffixer()
     elif option == "OriginalAffixer":
-        logger.info("OriginalAffixer being used!")
+        logger.debug("OriginalAffixer being used!")
         return OriginalAffixer(probability_prioritize_objects_of_interest)
+    elif option == "NoValueRegionAffixer":
+        logger.debug("NoValueRegionAffixer being used!")
+        return NoValueRegionAffixer()
     else:
         # TODO: Add support for NoValueRegionAffixer
         logger.error("AffixerType %s not supported!", option)
@@ -294,6 +298,15 @@ def process_original_occlusion_image(
         intendedSize, intendedSizeDivisor = determine_scaled_size_as_per_original_propotions(occlusion_image_transformed)
         occlusion_image_transformed_intended = occlusion_image_transformed.resize(intendedSize)
         (center_point, resize_scale) = affixer.decide_where_and_scale(background_image, background_annotation, occlusion_image_transformed_intended)
+
+        # We assume foreground images of size around 100x100. If resize_scale <= 0.01 then we are talking about an image of size one pixel which is useless at present.
+        if resize_scale <= 0.01:
+            logger.warn(
+                "Proposed scaling %f is unreasonable. Skipping foreground image name: %s, background image path: %s",
+                resize_scale,
+                occlusion_image_filename,
+                path_background_image)
+            continue
 
         # Determine final scale
         final_resize_scale = (1./intendedSizeDivisor)*resize_scale
@@ -421,8 +434,8 @@ def create_synthetic_images_for_all_images_under_current_folders(
                 affixerType
             )
 
-            image_annotation_collection.append(image_annotations)
-            image_info_collection.append(image_infos)
+            image_annotation_collection.extend(image_annotations)
+            image_info_collection.extend(image_infos)
 
     return (image_annotation_collection, image_info_collection, cur_image_id)
 

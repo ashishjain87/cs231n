@@ -13,7 +13,7 @@ pathForegroundSuperDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/rep
 pathOcclusionNameToOcclusionIdMapping: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/input/occlusion-name-to-occlusion-id.csv
 
 output:
-        pathTargetDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/output/val/OriginalAffixer2
+        pathTargetDir: /Users/ashish/Source/Courses/Stanford/CS231N/project/repo/0/cs231n/ashish/synthetic/output/val/NoValueRegionAffixer
         imagesDirName: images
         annotationsDirName: labels
 
@@ -23,6 +23,6 @@ threshold: 250
 
 probabilityPrioritizeObjectsOfInterest: 0.5
 
-affixerType: OriginalAffixer
+affixerType: NoValueRegionAffixer
 
-probabilitySkipBackgroundImage: 0.5
+probabilitySkipBackgroundImage: 0.0
