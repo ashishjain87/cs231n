@@ -7,7 +7,7 @@ from Affixer import Affixer
 from OriginalAffixer import OriginalAffixer
 
 DEFAULT_MIN_NON_OVERLAP = 0.15
-DEFAULT_MIN_OVERLAP = 0.25
+DEFAULT_MIN_OVERLAP = 0.30
 
 class NonSideAffixer(Affixer):
     """
@@ -19,7 +19,7 @@ class NonSideAffixer(Affixer):
     min_non_overlap: float
     min_overlap: float
 
-    def  __init__(self, min_percentage_of_background_height: float = 10.0, max_percentage_of_background_height: float = 80.0,
+    def  __init__(self, min_percentage_of_background_height: float = 10.0, max_percentage_of_background_height: float = 40.0,
                   min_non_overlap: float = DEFAULT_MIN_NON_OVERLAP, min_overlap: float = DEFAULT_MIN_OVERLAP) -> None:
         super().__init__()
         assert min_percentage_of_background_height > 0 and min_percentage_of_background_height < 100, "min_percentage_of_background_height cannot be negative"
