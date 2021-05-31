@@ -116,25 +116,59 @@ def get_args():
     parser.add_argument('--out-root', type=str, help="top-level dir where output data should be stored")
     parser.add_argument('--use-aug-prob', type=float, default=0.4,
                         help="a fraction between 0 and 1 dictating how often to use augmented images.")
+    parser.add_argument('--clear-out-dirs', action='store_true', help="remove files in output directories before generation")
+    parser.add_argument('--skip-train', action='store_true', help="skip processing training data")
+    parser.add_argument('--skip-val-test', action='store_true', help="skip processing val and test data")
+
     return parser.parse_args()
+
+
+def make_dir_if_not_exists(dirpath: str):
+    if not os.path.exists(dirpath):
+        os.system(f"mkdir {dirpath}")
+
+
+def rm_contents_if_exists(dirpath: str):
+    if os.path.exists(dirpath):
+        os.system(f"rm -r {dirpath}")
 
 
 def collect_images_into_final_sets(path_to_top_level_input_dir: str,
                                    path_to_top_level_output_dir: str,
-                                   use_aug_prob: float):
+                                   use_aug_prob: float,
+                                   clear_out_dirs: bool,
+                                   skip_train: bool,
+                                   skip_val_test: bool):
     # As a user of this, consider setting a random seed
     # random.seed(42)
 
-    os.system(f"mkdir {path_to_top_level_output_dir}")
-    os.system(f"mkdir {path_to_top_level_output_dir}/images")
-    os.system(f"mkdir {path_to_top_level_output_dir}/labels")
+    make_dir_if_not_exists(path_to_top_level_output_dir)
+    make_dir_if_not_exists(f"{path_to_top_level_output_dir}/images")
+    make_dir_if_not_exists(f"{path_to_top_level_output_dir}/labels")
 
-    train_images = get_chosen_images(f"{path_to_top_level_input_dir}/images/train", False, use_aug_prob)
-    populate_out_dir(train_images, path_to_top_level_input_dir, path_to_top_level_output_dir, "train")
-
-    for setname in ["val", "test"]:
-        train_images = get_chosen_images(f"{path_to_top_level_input_dir}/images/{setname}", True, use_aug_prob)
-        populate_out_dir(train_images, path_to_top_level_input_dir, path_to_top_level_output_dir, setname)
+    for setname in os.listdir(f"{path_to_top_level_input_dir}/images"):
+        if setname.startswith("train"):
+            if skip_train:
+                print(f"skipping {setname}")
+                continue
+            print(f"processing {setname}")
+            images = get_chosen_images(f"{path_to_top_level_input_dir}/images/{setname}", False, use_aug_prob)
+            if clear_out_dirs:
+                rm_contents_if_exists(f"{path_to_top_level_output_dir}/images/{setname}")
+                rm_contents_if_exists(f"{path_to_top_level_output_dir}/labels/{setname}")
+            populate_out_dir(images, path_to_top_level_input_dir, path_to_top_level_output_dir, setname)
+        elif setname.startswith("val") or setname.startswith("test"):
+            if skip_val_test:
+                print(f"skipping {setname}")
+                continue
+            print(f"processing {setname}")
+            images = get_chosen_images(f"{path_to_top_level_input_dir}/images/{setname}", True, use_aug_prob)
+            if clear_out_dirs:
+                rm_contents_if_exists(f"{path_to_top_level_output_dir}/images/{setname}")
+                rm_contents_if_exists(f"{path_to_top_level_output_dir}/labels/{setname}")
+            populate_out_dir(images, path_to_top_level_input_dir, path_to_top_level_output_dir, setname)
+        else:
+            print(f"Could not process '{setname}', must start with 'train', 'val', or 'test'")
 
 
 if __name__ == "__main__":
@@ -142,4 +176,7 @@ if __name__ == "__main__":
     in_path = args.in_root
     out_path = args.out_root
     aug_prob = args.use_aug_prob
-    collect_images_into_final_sets(in_path, out_path, aug_prob)
+    clear_out_dirs = args.clear_out_dirs
+    skip_train = args.skip_train
+    skip_val_test = args.skip_val_test
+    collect_images_into_final_sets(in_path, out_path, aug_prob, clear_out_dirs, skip_train, skip_val_test)
