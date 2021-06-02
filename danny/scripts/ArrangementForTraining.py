@@ -66,13 +66,16 @@ def get_chosen_images(path_to_base_dir: str, one_per_id: bool = False, use_aug_p
     return chosen_images
 
 
-def copy_label_file(path_to_top_level_input_dir: str, out_dir_set_name: str, out_dir_top_level_path: str,
-                    original_label_file_name: str, output_label_file_name: str):
+def copy_label_file(path_to_top_level_input_dir: str, path_to_containing_dir: str, out_dir_set_name: str,
+                    out_dir_top_level_path: str, original_label_file_name: str, output_label_file_name: str):
+    if not path_to_containing_dir.startswith(path_to_top_level_input_dir):
+        raise ValueError("The path computation is erroneous.")
+    path_suffix = path_to_containing_dir[len(path_to_top_level_input_dir + "/images/"):]
     os.system(
-        f"cp {path_to_top_level_input_dir}/labels/{out_dir_set_name}/orig/modal/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/modal/{output_label_file_name}"
+        f"cp {path_to_top_level_input_dir}/labels/{path_suffix}/modal/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/modal/{output_label_file_name}"
     )
     os.system(
-        f"cp {path_to_top_level_input_dir}/labels/{out_dir_set_name}/orig/amodal/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/amodal/{output_label_file_name}"
+        f"cp {path_to_top_level_input_dir}/labels/{path_suffix}/amodal/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/amodal/{output_label_file_name}"
     )
 
 
@@ -105,8 +108,15 @@ def populate_out_dir(chosen_images: Dict[str, List[Tuple[str, str]]], path_to_to
             path_to_containing_dir, filename = image
             extension_len = len(FILE_EXTENSION)
             output_label_file_name = filename[:(-1*extension_len)] + "txt"
-            copy_label_file(path_to_top_level_input_dir, out_dir_set_name, out_dir_top_level_path,
+
+            filename_list = filename.split('.')
+            if len(filename_list) == 3:
+                original_label_file_name = filename_list[0] + '.annotated.' + filename_list[1] + '.txt'
+
+            copy_label_file(path_to_top_level_input_dir, path_to_containing_dir,
+                            out_dir_set_name, out_dir_top_level_path,
                             original_label_file_name, output_label_file_name)
+
             copy_image(f"{path_to_containing_dir}/{filename}", filename, out_dir_set_name, out_dir_top_level_path)
 
 
