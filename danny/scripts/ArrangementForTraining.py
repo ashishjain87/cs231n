@@ -71,11 +71,13 @@ def copy_label_file(path_to_top_level_input_dir: str, path_to_containing_dir: st
     if not path_to_containing_dir.startswith(path_to_top_level_input_dir):
         raise ValueError("The path computation is erroneous.")
     path_suffix = path_to_containing_dir[len(path_to_top_level_input_dir + "/images/"):]
+    print(f"HERE {path_to_top_level_input_dir}/labels/{path_suffix}/modal/{original_label_file_name}")
+    print(f"HERE {out_dir_top_level_path}/labels/{out_dir_set_name}/modal/{output_label_file_name}")
     os.system(
-        f"cp {path_to_top_level_input_dir}/labels/{path_suffix}/modal/{original_label_file_name} {path_suffix}/modal/{output_label_file_name}"
+        f"cp {path_to_top_level_input_dir}/labels/{path_suffix}/modal/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/modal/{output_label_file_name}"
     )
     os.system(
-        f"cp {path_to_top_level_input_dir}/labels/{path_suffix}/amodal/{original_label_file_name} {path_suffix}/amodal/{output_label_file_name}"
+        f"cp {path_to_top_level_input_dir}/labels/{path_suffix}/amodal/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/amodal/{output_label_file_name}"
     )
 
 
@@ -108,10 +110,17 @@ def populate_out_dir(chosen_images: Dict[str, List[Tuple[str, str]]], path_to_to
             path_to_containing_dir, filename = image
             extension_len = len(FILE_EXTENSION)
             output_label_file_name = filename[:(-1*extension_len)] + "txt"
+
+            filename_list = filename.split('.')
+            if len(filename_list) == 3:
+                output_label_file_name = filename_list[0] + '.annotated.' + filename_list[1] + '.txt'
+            print(filename)
+            print(output_label_file_name)
             copy_label_file(path_to_top_level_input_dir, path_to_containing_dir,
                             out_dir_set_name, out_dir_top_level_path,
-                            original_label_file_name, output_label_file_name)
-            copy_image(f"{path_to_containing_dir}/{filename}", filename, out_dir_set_name, out_dir_top_level_path)
+                            output_label_file_name, output_label_file_name)
+            assert False
+            # copy_image(f"{path_to_containing_dir}/{filename}", filename, out_dir_set_name, out_dir_top_level_path)
 
 
 def get_args():
