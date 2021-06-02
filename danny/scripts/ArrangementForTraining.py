@@ -72,10 +72,10 @@ def copy_label_file(path_to_top_level_input_dir: str, path_to_containing_dir: st
         raise ValueError("The path computation is erroneous.")
     path_suffix = path_to_containing_dir[len(path_to_top_level_input_dir + "/images/"):]
     os.system(
-        f"cp {path_to_top_level_input_dir}/labels/{path_suffix}/modal/{original_label_file_name} {path_suffix}/modal/{output_label_file_name}"
+        f"cp {path_to_top_level_input_dir}/labels/{path_suffix}/modal/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/modal/{output_label_file_name}"
     )
     os.system(
-        f"cp {path_to_top_level_input_dir}/labels/{path_suffix}/amodal/{original_label_file_name} {path_suffix}/amodal/{output_label_file_name}"
+        f"cp {path_to_top_level_input_dir}/labels/{path_suffix}/amodal/{original_label_file_name} {out_dir_top_level_path}/labels/{out_dir_set_name}/amodal/{output_label_file_name}"
     )
 
 
