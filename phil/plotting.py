@@ -70,7 +70,31 @@ if __name__ == "__main__":
     # modal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/aug/Basketball/modal/000008.annotated.28.txt')
     # show_bbox_yolo_modal_amodal(amodal_label_filepath, modal_label_filepath, image_filepath)
     
-    image_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/images/train-SideAffixerSameClassSameImage/orig/000010.png')
-    amodal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/orig/amodal/000010.txt')
-    modal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/orig/modal/000010.txt')
+    # image_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/images/train-SideAffixerSameClassSameImage/orig/000010.png')
+    # amodal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/orig/amodal/000010.txt')
+    # modal_label_filepath = os.path.join(os.path.dirname(__file__), './intermediate_data/labels/train-SideAffixerSameClassSameImage/orig/modal/000010.txt')
+    
+    # image_filepath = os.path.join(os.path.dirname(__file__), './001792.18000603.png')
+    # amodal_label_filepath = os.path.join(os.path.dirname(__file__), './001792.annotated.18000603.txt')
+    # modal_label_filepath = os.path.join(os.path.dirname(__file__), '../001792.annotated.18000603.txt')
+    
+    # image_filepath = os.path.join(os.path.dirname(__file__), './train_test/004234.1016435.png')
+    # amodal_label_filepath = os.path.join(os.path.dirname(__file__), './train_test/amodal/004234.annotated.1016435.txt')
+    # modal_label_filepath = os.path.join(os.path.dirname(__file__), './train_test/modal/004234.annotated.1016435.txt')
+    
+    image_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/final/images/train/005003.3006671.png'
+    amodal_label_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/final/labels/train/amodal/005003.3006671.txt'
+    modal_label_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/final/labels/train/modal/005003.3006671.txt'
+    
+    image_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/final/images/train/001247.3003243.png'
+    amodal_label_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/final/labels/train/amodal/001247.3003243.txt'
+    modal_label_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/final/labels/train/modal/001247.3003243.txt'
+
+    image_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/final/images/train/003767.2003886.png'
+    amodal_label_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/final/labels/train/amodal/003767.2003886.txt'
+    modal_label_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/final/labels/train/modal/003767.2003886.txt'
+    
+    image_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/cs231n/phil/intermediate_data/images/val-side-affixer-different-class/aug/Kite/000003.17000700.png'
+    amodal_label_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/cs231n/phil/intermediate_data/labels/val-side-affixer-different-class/aug/Kite/amodal/000003.annotated.17000700.txt'
+    modal_label_filepath = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/cs231n/phil/intermediate_data/labels/val-side-affixer-different-class/aug/Kite/modal/000003.annotated.17000700.txt'
     show_bbox_yolo_modal_amodal(amodal_label_filepath, modal_label_filepath, image_filepath)
