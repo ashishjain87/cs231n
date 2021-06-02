@@ -29,6 +29,7 @@ def read_background_annotation_yolo(yolo_label_path: str) -> np.ndarray:
 
 
 def plot_bbox_yolo_modal_amodal_predictions(amodal_label_filepath: Path, modal_label_filepath: Path, prediction_label_filepath: Path, image_filepath: Path, show_plot: bool, save_plot_dir: str):
+    print("AHHHHHH")
     image = np.array(plt.imread(image_filepath))
     amodal_label = read_background_annotation_yolo(amodal_label_filepath)
     modal_label = read_background_annotation_yolo(modal_label_filepath)
@@ -114,8 +115,6 @@ def traverse_predicted(exp_num: int, yolo_path: str, data_path: str, split_name:
     for prediction_label_filepath in os.scandir(prediction_labels_dir):
         prediction_label_filepath_list = prediction_label_filepath.name.split('.')
         original_image_id = prediction_label_filepath_list[0]
-        if original_image_id != "004948":
-            continue
         augmented_image_id = "." + prediction_label_filepath_list[1] if len(prediction_label_filepath_list) == 3 else ""
 
         image_filepath = Path(data_path, "images", split_name, original_image_id + augmented_image_id + ".png")
@@ -127,6 +126,7 @@ def traverse_predicted(exp_num: int, yolo_path: str, data_path: str, split_name:
         print(amodal_label_filepath)
         print(modal_label_filepath)
         plot_bbox_yolo_modal_amodal_predictions(amodal_label_filepath, modal_label_filepath, prediction_label_filepath.path, image_filepath, show_plot, save_plot_dir)
+        break
 
 
 
@@ -134,7 +134,7 @@ def traverse_predicted(exp_num: int, yolo_path: str, data_path: str, split_name:
 if __name__ == "__main__":
     """
     Example Usage:
-    python analyse.py --data /Users/philipmateopfeffer/Downloads/cs231n_class_project/final \
+    python analyse.py --data /Users/philipmateopfeffer/Downloads/cs231n_class_project/fixed_final \
         --yolo /Users/philipmateopfeffer/Downloads/cs231n_class_project/yolov5 --exp-num 35 \
         --save-plot-dir /Users/philipmateopfeffer/Downloads/cs231n_class_project/analysis/modal-amodal-prediction-plots \
         --split-name val-side-affixer-different-class \
