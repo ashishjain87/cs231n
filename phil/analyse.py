@@ -160,11 +160,11 @@ def plot_bbox_yolo_modal_amodal_predictions_filepaths(amodal_label_filepath: Pat
     image_id = amodal_label_filepath.stem
     amodal_label = read_background_annotation_yolo(amodal_label_filepath)
     modal_label = read_background_annotation_yolo(modal_label_filepath)
-    prediction_label = read_background_annotation_yolo(prediction_label_filepath)
+    prediction_label = read_background_annotation_yolo(prediction_label_filepath)   # Note: This will have an extra confidence column
     
     baseline_prediction_label = None
     if baseline_prediction_label_filepath is not None:
-        baseline_prediction_label = read_background_annotation_yolo(baseline_prediction_label_filepath)
+        baseline_prediction_label = read_background_annotation_yolo(baseline_prediction_label_filepath) # Note: This will have an extra confidence column
     
     plot_bbox_yolo_modal_amodal_predictions_arrays(amodal_label, modal_label, prediction_label, baseline_prediction_label, image, image_id, show_plot, save_plot_dir)
     
