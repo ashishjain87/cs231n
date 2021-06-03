@@ -124,8 +124,19 @@ def plot_masks_with_image(mask1: np.ndarray, mask2: np.ndarray, image_filepath: 
 
     plt.show()
 
+def get_covered_pixels(mask: np.ndarray) -> np.ndarray:
+    width, height = mask.shape
+    mask_pixel_indices = np.arange(width*height)
+    mask_covered_pixels = mask_pixel_indices[np.invert(mask.flatten().astype(bool))]
+    return mask_covered_pixels
+
 def compute_segmentaion_IoU(mask1: np.ndarray, mask2: np.ndarray) -> float:
-    return 0
+    mask1_covered_pixels = get_covered_pixels(mask1)
+    mask2_covered_pixels = get_covered_pixels(mask2)
+    intersecting_pixels = np.intersect1d(mask1_covered_pixels, mask2_covered_pixels)
+    union_pixels = np.union1d(mask1_covered_pixels, mask2_covered_pixels)
+    IoU = intersecting_pixels.shape[0] / union_pixels.shape[0]
+    return IoU
 
 def get_split_type(split: str) -> str:
     if split.startswith("train"): return "train"
@@ -153,7 +164,7 @@ def traverse_predicted(yolo_path: str, model_exp_num: int, baseline_exp_num: int
         # IoU
         amodal_mask = generate_mask(amodal_label_filepath)
         modal_mask = generate_mask(modal_label_filepath)
-        plot_masks_with_image(amodal_mask, modal_mask, image_filepath, amodal_label_filepath, modal_label_filepath)
+        # plot_masks_with_image(amodal_mask, modal_mask, image_filepath, amodal_label_filepath, modal_label_filepath)
         IoU = compute_segmentaion_IoU(amodal_mask, modal_mask)
 
         # Plotting
