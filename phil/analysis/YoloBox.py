@@ -1,4 +1,5 @@
 from typing import List, Tuple, Optional
+from matplotlib.pyplot import box
 
 import numpy as np
 
@@ -79,12 +80,12 @@ def get_boxes_from_nparray(label: np.ndarray) -> List[YoloBox]:
     """
     if len(label.shape) == 1:
         label = label.reshape(1, -1)
-    elif label[1] == 0:
+    elif label.shape[1] == 0:
         return []
 
     boxes = []
     for i in range(label.shape[0]):
-        vector = label[0, :]
+        vector = label[i, :]
         category = vector[0]
         center_x = vector[1]
         center_y = vector[2]
@@ -94,4 +95,42 @@ def get_boxes_from_nparray(label: np.ndarray) -> List[YoloBox]:
 
     return boxes
 
+def match_boxes_trivial(box_set_1: List[YoloBox], box_set_2: List[YoloBox]) -> List[Tuple[YoloBox, Optional[YoloBox]]]:
+    """
+    same interface as match_boxes, but sets are of same length and correspond to the other. can just return zip(set1, set2) (test this though, please).
 
+    :return matching:
+    """
+    assert len(box_set_1) == len(box_set_2), "Modal and Amodal boxes have different number of labels."
+
+    matching = list(zip(box_set_1, box_set_2))
+    return matching
+
+
+def match_boxes(box_set_1: List[YoloBox], box_set_2: List[YoloBox]) -> List[Tuple[YoloBox, Optional[YoloBox]]]:
+    """
+    attempts to find the best box in box_set_2 for each box in box_set_1. duplicate assignments are not allowed!
+
+    Note: don't actually have to run this for amodal/modal pairs, structure of label file already gives us the pairing
+
+    :param box_set_1:
+    :param box_set_2:
+    :return:
+    """
+
+    sorted_box_set_1 = sorted(box_set_1, key=lambda x: x.size()) # sorted smallest first
+    matching = []
+
+    for box1 in sorted_box_set_1:
+        if len(box_set_2) == 0:
+            break
+        
+        box1_IoUs = [(idx, overlap(box1, box2)[1]) for idx, box2 in enumerate(box_set_2)]
+        sorted_box1_IoUs = sorted(box1_IoUs, key=lambda x: x[1], reverse=True)      # sorted box1 has largest IoU with box2 first
+        chosen_box2_idx = sorted_box1_IoUs[0][0]    # greedily pick the box with highest IoU
+        chosen_box_2 = box_set_2[chosen_box2_idx]
+        
+        matching.append((box1, chosen_box_2))
+        box_set_2.remove(chosen_box_2)
+
+    return matching

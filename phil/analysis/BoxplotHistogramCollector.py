@@ -49,7 +49,8 @@ class BoxplotHistogramCollector:
         plt.xlabel(x_label)
         plt.ylabel(y_label)
         fig.suptitle(title, fontsize=11)
-        plt.savefig(savepath)
+        # plt.savefig(savepath)
+        plt.show()
 
 
 def test_this():
