@@ -1,5 +1,6 @@
 from typing import List, Tuple, Optional
 from matplotlib.pyplot import box
+from collections import defaultdict
 
 import numpy as np
 
@@ -118,19 +119,32 @@ def match_boxes(box_set_1: List[YoloBox], box_set_2: List[YoloBox]) -> List[Tupl
     :return:
     """
 
-    sorted_box_set_1 = sorted(box_set_1, key=lambda x: x.size()) # sorted smallest first
     matching = []
 
-    for box1 in sorted_box_set_1:
-        if len(box_set_2) == 0:
-            break
-        
-        box1_IoUs = [(idx, overlap(box1, box2)[1]) for idx, box2 in enumerate(box_set_2)]
-        sorted_box1_IoUs = sorted(box1_IoUs, key=lambda x: x[1], reverse=True)      # sorted box1 has largest IoU with box2 first
-        chosen_box2_idx = sorted_box1_IoUs[0][0]    # greedily pick the box with highest IoU
-        chosen_box_2 = box_set_2[chosen_box2_idx]
-        
-        matching.append((box1, chosen_box_2))
-        box_set_2.remove(chosen_box_2)
+    box_pairs_list = []
+    for i, box1 in enumerate(box_set_1):
+        for j, box2 in enumerate(box_set_2):
+            overlap, iou = box1.iou(box2)
+            if overlap:
+                box_pairs_list.append((box1, box2, iou, i, j))
+
+    box_pairs_list = sorted(box_pairs_list, key=lambda x: x[2], reverse=True)
+
+    mapping = defaultdict(lambda: None)
+    used_i = set()
+    used_j = set()
+    for box1, box2, iou, i, j in box_pairs_list:
+        if i in used_i or j in used_j:
+            continue
+        used_i.add(i)
+        used_j.add(j)
+        mapping[i] = j
+
+    for i, box1 in enumerate(box_set_1):
+        j = mapping[i]
+        if j is None:
+            matching.append((box1, None))
+        else:
+            matching.append((box1, box_set_2[j]))
 
     return matching

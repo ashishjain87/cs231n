@@ -43,7 +43,7 @@ class BoxplotHistogramCollector:
 
         positions = [0.5 + i for i in range(num_bins)]
         plt.boxplot(x=bin_groups, positions=positions)
-        labels = [str(round((self.upper_bound - self.lower_bound)/num_bins * i)) for i in range(num_bins + 1)]
+        labels = [str(round((self.upper_bound - self.lower_bound)/num_bins * i, 3)) for i in range(num_bins + 1)]
 
         plt.xticks(ticks=range(num_bins + 1), labels=labels)
         plt.xlabel(x_label)
