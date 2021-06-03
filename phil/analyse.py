@@ -147,10 +147,16 @@ def traverse_predicted(yolo_path: str, model_exp_num: int, baseline_exp_num: int
         modal_label_filepath = Path(data_path, "labels", split_name, "modal", prediction_label_filepath.name)
         baseline_prediction_label_filepath = Path(yolo_path, "runs", "test", "exp" + str(baseline_exp_num), "labels", prediction_label_filepath.name) if baseline_exp_num is not None else None
         
+        ##########################################
+        # PUT THE ANALYSIS FUNCTIONS YOU WANT HERE
+        ##########################################
+        # IoU
         amodal_mask = generate_mask(amodal_label_filepath)
         modal_mask = generate_mask(modal_label_filepath)
         plot_masks_with_image(amodal_mask, modal_mask, image_filepath, amodal_label_filepath, modal_label_filepath)
         IoU = compute_segmentaion_IoU(amodal_mask, modal_mask)
+
+        # Plotting
         plot_bbox_yolo_modal_amodal_predictions(amodal_label_filepath, modal_label_filepath, prediction_label_filepath.path, baseline_prediction_label_filepath, image_filepath, show_plot, save_plot_dir)
 
 
