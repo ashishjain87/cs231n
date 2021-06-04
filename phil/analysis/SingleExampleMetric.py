@@ -1,6 +1,6 @@
 import numpy as np
 
-from phil.analysis.BoxplotHistogramCollector import BoxplotHistogramCollector
+from analysis.BoxplotHistogramCollector import BoxplotHistogramCollector
 
 
 class SingleExampleMetric:

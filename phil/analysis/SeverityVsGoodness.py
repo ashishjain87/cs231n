@@ -1,8 +1,8 @@
 import numpy as np
 
-from phil.analysis import BoxplotHistogramCollector
-from phil.analysis import YoloBox
-from phil.analysis.SingleExampleMetric import SingleExampleMetric
+from analysis import BoxplotHistogramCollector
+from analysis import YoloBox
+from analysis.SingleExampleMetric import SingleExampleMetric
 
 
 class SeverityVsGoodness(SingleExampleMetric):

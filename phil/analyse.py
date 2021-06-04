@@ -12,8 +12,8 @@ import matplotlib.patches as patches
 import random
 from tqdm import tqdm
 
-from phil.analysis.BoxplotHistogramCollector import BoxplotHistogramCollector
-from phil.analysis.SeverityVsGoodness import SeverityVsGoodness
+from analysis.BoxplotHistogramCollector import BoxplotHistogramCollector
+from analysis.SeverityVsGoodness import SeverityVsGoodness
 
 IMG_WIDTH = 1224
 IMG_HEIGHT = 370
@@ -382,12 +382,12 @@ def traverse_predicted(yolo_path: str, model_exp_dir: str, baseline_exp_dir: str
         # TODO: make savepath configurable from argparse
         severity_vs_goodness_baseline.collector.produce_histogram(
             num_bins=10, title="Baseline Model - Prediction IoU by Occlusion Severity",
-            x_label="Occlusion Severity", y_label="predicted box/ground truth IoU", savepath=f"{analysis_dir}/{split_name}/histograms/{model_name}.png"
+            x_label="Occlusion Severity", y_label="predicted box/ground truth IoU", savepath=f"{analysis_dir}/{split_name}/histograms/{baseline_name}.png"
         )
         # TODO: make title configurable from argparse to generate more specific title here
     severity_vs_goodness_experimental.collector.produce_histogram(
-        num_bins=10, title="Experimental Model - Prediction IoU by Occlusion Severity",
-        x_label="Occlusion Severity", y_label="predicted box/ground truth IoU", savepath=f"{analysis_dir}/{split_name}/histograms/{baseline_name}.png"
+        num_bins=10, title=f"{model_name} - Prediction IoU by Occlusion Severity",
+        x_label="Occlusion Severity", y_label="predicted box/ground truth IoU", savepath=f"{analysis_dir}/{split_name}/histograms/{model_name}.png"
     )
     append_IoU_and_occlusion_severity_to_csv(IoU_and_occlusion_severity_per_image, f"{analysis_dir}/iou_and_occlusion_severity.csv", split_name)
 

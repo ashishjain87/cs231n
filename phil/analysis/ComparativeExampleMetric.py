@@ -1,6 +1,6 @@
 import numpy as np
 
-from phil.analysis import BoxplotHistogramCollector
+from analysis import BoxplotHistogramCollector
 
 
 class ComparativeExampleMetric:
