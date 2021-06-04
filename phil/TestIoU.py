@@ -19,9 +19,9 @@ def iou_test_no_overlap():
     IoU = analyse.compute_segmentaion_IoU(test_mask1, test_mask2)
     
     assert IoU == 0.0
-    print(f"test_mask1:\n{test_mask1}")
-    print(f"test_mask2:\n{test_mask2}")
-    print(IoU)
+    # print(f"test_mask1:\n{test_mask1}")
+    # print(f"test_mask2:\n{test_mask2}")
+    # print(IoU)
 
 def iou_test_one_column_overlap():
     test_mask1 = np.zeros((10,10))
@@ -32,10 +32,10 @@ def iou_test_one_column_overlap():
     IoU = analyse.compute_segmentaion_IoU(test_mask1, test_mask2)
     
     assert IoU == 0.25
-    print(f"test_mask1:\n{test_mask1}")
-    print(f"test_mask2:\n{test_mask2}")
-    print(f"overlap:\n{test_mask1 + test_mask2}")
-    print(IoU)
+    # print(f"test_mask1:\n{test_mask1}")
+    # print(f"test_mask2:\n{test_mask2}")
+    # print(f"overlap:\n{test_mask1 + test_mask2}")
+    # print(IoU)
 
 def iou_test_full_overlap():
     test_mask1 = np.zeros((10,10))
@@ -46,10 +46,10 @@ def iou_test_full_overlap():
     IoU = analyse.compute_segmentaion_IoU(test_mask1, test_mask2)
     
     assert IoU == 1.
-    print(f"test_mask1:\n{test_mask1}")
-    print(f"test_mask2:\n{test_mask2}")
-    print(f"overlap:\n{test_mask1 + test_mask2}")
-    print(IoU)
+    # print(f"test_mask1:\n{test_mask1}")
+    # print(f"test_mask2:\n{test_mask2}")
+    # print(f"overlap:\n{test_mask1 + test_mask2}")
+    # print(IoU)
 
 def iou_test_two_objects_per_mask():
     test_mask1 = np.zeros((10,10))
@@ -62,10 +62,10 @@ def iou_test_two_objects_per_mask():
     IoU = analyse.compute_segmentaion_IoU(test_mask1, test_mask2)
     
     assert IoU == 9./37
-    print(f"test_mask1:\n{test_mask1}")
-    print(f"test_mask2:\n{test_mask2}")
-    print(f"overlap:\n{test_mask1 + test_mask2}")
-    print(IoU)
+    # print(f"test_mask1:\n{test_mask1}")
+    # print(f"test_mask2:\n{test_mask2}")
+    # print(f"overlap:\n{test_mask1 + test_mask2}")
+    # print(IoU)
 
 def iou_test_two_objects_per_mask_partial_overlap():
     test_mask1 = np.zeros((10,10))
@@ -78,14 +78,15 @@ def iou_test_two_objects_per_mask_partial_overlap():
     IoU = analyse.compute_segmentaion_IoU(test_mask1, test_mask2)
     
     assert IoU == 7./46
-    print(f"test_mask1:\n{test_mask1}")
-    print(f"test_mask2:\n{test_mask2}")
-    print(f"overlap:\n{test_mask1 + test_mask2}")
-    print(IoU)
+    # print(f"test_mask1:\n{test_mask1}")
+    # print(f"test_mask2:\n{test_mask2}")
+    # print(f"overlap:\n{test_mask1 + test_mask2}")
+    # print(IoU)
 
 if __name__ == "__main__":
-    # iou_test_no_overlap()
-    # iou_test_one_column_overlap()
-    # iou_test_full_overlap()
-    # iou_test_two_objects_per_mask()
+    iou_test_no_overlap()
+    iou_test_one_column_overlap()
+    iou_test_full_overlap()
+    iou_test_two_objects_per_mask()
     iou_test_two_objects_per_mask_partial_overlap()
+    print("PASSED")
