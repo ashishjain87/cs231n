@@ -63,15 +63,25 @@ if __name__ == "__main__":
     
     print("[WARNING] Make sure you've run this code on the baseline first!")
     print("[RECOMMENDED] Call the analysis directory something to do with the model you are running, e.g. /home/project/analysis-baseline-amodal-combined-train")
+    
     if args.analysis_dir is None:
         raise ValueError("Must specify analysis dir path")
+    
     if args.model_name is None:
         raise ValueError("Must specify model name")
+    
+    # Either you declare both the exp_dir and the name or neither. Can't just do one
     if (args.baseline_name is None) ^ (args.baseline_exp_dir is None):
         raise ValueError("Must specify both --baseline-name and --baseline-exp-dir")
     
     if args.analysis_dir is not None and not os.path.exists(Path(args.analysis_dir, "histograms")):
         os.makedirs(Path(args.analysis_dir, "histograms"))
+
+    # Make sure to destroy this file so that we don't keep appending if we start experiment all over
+    iou_and_occlusion_severity_file = f"{args.analysis_dir}/iou_and_occlusion_severity.csv"
+    if os.path.exists(iou_and_occlusion_severity_file):
+        os.system(f"rm {iou_and_occlusion_severity_file}")
+        assert not os.path.exists(iou_and_occlusion_severity_file)
 
     create_yaml(Path(args.data_dir), args.sets, args.batch_size, Path(args.weights), args.model_name, args.baseline_exp_dir, args.baseline_name, Path(args.analysis_dir), args.num_examples_to_visualise, args.show_plot)
 
