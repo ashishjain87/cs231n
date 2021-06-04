@@ -11,13 +11,19 @@ def create_yaml(data_dir: Path, sets: List, batch_size: int, weights_path: Path,
             contents = f"test: {data_dir}/images/{set}\n\nnc: 3\nnames: ['vehicle', 'person', 'misc']"
             yaml_file.write(contents)
 
-        # os.system(f"python ../yolov5/test.py --img 640 --name {model_name}-{set} --batch-size {batch_size} --data {yaml_path} --weights {weights_path} --task test --save-hybrid --save-conf --conf-thres 0.25 --iou-thres 0.6")
+        if analysis_dir is not None:
+            if not os.path.exists(Path(analysis_dir, set, "inference_outputs")):
+                os.makedirs(Path(analysis_dir, set, "inference_outputs"))
+            if not os.path.exists(Path(analysis_dir, set, "histograms")):
+                os.makedirs(Path(analysis_dir, set, "histograms"))
+
+        os.system(f"python ../yolov5/test.py --img 640 --name {model_name}/{set} --batch-size {batch_size} --data {yaml_path} --weights {weights_path} --task test --save-hybrid --save-conf --conf-thres 0.25 --iou-thres 0.6 | tee {analysis_dir}/{set}/inference_outputs/results.txt")
         baseline_dir_str = f"--baseline-exp-dir {Path(baseline_exp_dir)} " if baseline_exp_dir is not None else ""
         show_plot_str = f"--show-plot " if show_plot else ""
 
         os.system(f"python ./phil/analyse.py --data {data_dir} " +
                         f"--yolo ../yolov5 " +
-                        f"--model-exp-dir ./runs/test/{model_name}-{set} " +
+                        f"--model-exp-dir ./runs/test/{model_name}/{set} " +
                         f"--model-name {model_name} " + 
                         baseline_dir_str +
                         f"--baseline-name {baseline_name} " + 
@@ -74,8 +80,8 @@ if __name__ == "__main__":
     if (args.baseline_name is None) ^ (args.baseline_exp_dir is None):
         raise ValueError("Must specify both --baseline-name and --baseline-exp-dir")
     
-    if args.analysis_dir is not None and not os.path.exists(Path(args.analysis_dir, "histograms")):
-        os.makedirs(Path(args.analysis_dir, "histograms"))
+    if args.analysis_dir is not None and not os.path.exists(Path(args.analysis_dir)):
+        os.makedirs(Path(args.analysis_dir))
 
     # Make sure to destroy this file so that we don't keep appending if we start experiment all over
     iou_and_occlusion_severity_file = f"{args.analysis_dir}/iou_and_occlusion_severity.csv"
