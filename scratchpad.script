@@ -1,0 +1,108 @@
+1
+python ./phil/AnalyseAllSets.py \
+    --data-dir /home/schwartzd/datasets-verified-tiny/reduced-verified-tiny \
+    --sets 'test-no-value-region-affixer-different-class, test-no-value-region-affixer-same-class-different-images, test-no-value-region-affixer-same-class-same-images, test-non-side-affixer-different-class, test-non-side-affixer-same-class-different-images, test-non-side-affixer-same-class-same-images, test-side-affixer-different-class, test-side-affixer-same-class-different-images, test-side-affixer-same-class-same-images, test-unaugmented' \
+    --batch-size 32 \
+    --model-name nms-verified-tiny-dataset \
+    --weights /home/schwartzd/other-vm-models/phil-models/amodal-stage-nms-verified-tiny-dataset/weights/best.pt \
+    --modal-stage-model /home/schwartzd/other-vm-models/phil-models/modal-stage-verified-tiny/weights/best.pt \
+    --analysis-dir ~/analysis/nms-verified-tiny-dataset \
+    --num-examples-to-visualise 0
+
+2
+python ./phil/AnalyseAllSets.py \
+    --data-dir /home/schwartzd/datasets-tainted/final \
+    --sets 'test-no-value-region-affixer-different-class, test-no-value-region-affixer-same-class-different-images, test-no-value-region-affixer-same-class-same-images, test-non-side-affixer-different-class, test-non-side-affixer-same-class-different-images, test-non-side-affixer-same-class-same-images, test-side-affixer-different-class, test-side-affixer-same-class-different-images, test-side-affixer-same-class-same-images, test-unaugmented' \
+    --batch-size 32 \
+    --model-name stage-topk-class-conf-only \
+    --weights /home/schwartzd/other-vm-models/phil-models/amodal-stage-topk-class-conf-only/weights/best.pt \
+    --modal-stage-model /home/schwartzd/other-vm-models/phil-models/modal-stage/weights/best.pt \
+    --analysis-dir ~/analysis/stage-topk-class-conf-only \
+    --num-examples-to-visualise 0
+
+3
+python ./phil/AnalyseAllSets.py \
+    --data-dir /home/schwartzd/datasets-tainted/final \
+    --sets 'test-no-value-region-affixer-different-class, test-no-value-region-affixer-same-class-different-images, test-no-value-region-affixer-same-class-same-images, test-non-side-affixer-different-class, test-non-side-affixer-same-class-different-images, test-non-side-affixer-same-class-same-images, test-side-affixer-different-class, test-side-affixer-same-class-different-images, test-side-affixer-same-class-same-images, test-unaugmented' \
+    --batch-size 32 \
+    --model-name baseline-amodal-combined-train \
+    --weights /home/schwartzd/other-vm-models/phil-models/baseline-amodal-combined-train/weights/best.pt \
+    --analysis-dir ~/analysis/baseline-amodal-combined-train \
+    --num-examples-to-visualise 0
+
+
+4
+python ./phil/AnalyseAllSets.py \
+    --data-dir /home/schwartzd/datasets-tainted/final \
+    --sets 'test-no-value-region-affixer-different-class, test-no-value-region-affixer-same-class-different-images, test-no-value-region-affixer-same-class-same-images, test-non-side-affixer-different-class, test-non-side-affixer-same-class-different-images, test-non-side-affixer-same-class-same-images, test-side-affixer-different-class, test-side-affixer-same-class-different-images, test-side-affixer-same-class-same-images, test-unaugmented' \
+    --batch-size 32 \
+    --model-name amodal-nms-original-dataset \
+    --weights /home/schwartzd/other-vm-models/ashish-models/amodal-nms-original-dataset/weights/best.pt \
+    --modal-stage-model /home/schwartzd/other-vm-models/phil-models/modal-stage/weights/best.pt \
+    --analysis-dir ~/analysis/amodal-nms-original-dataset \
+    --num-examples-to-visualise 0
+
+5
+python ./phil/AnalyseAllSets.py \
+    --data-dir /home/schwartzd/datasets-tainted/final \
+    --sets 'test-no-value-region-affixer-different-class, test-no-value-region-affixer-same-class-different-images, test-no-value-region-affixer-same-class-same-images, test-non-side-affixer-different-class, test-non-side-affixer-same-class-different-images, test-non-side-affixer-same-class-same-images, test-side-affixer-different-class, test-side-affixer-same-class-different-images, test-side-affixer-same-class-same-images, test-unaugmented' \
+    --batch-size 32 \
+    --model-name amodal-stage-gt-boxes \
+    --weights /home/schwartzd/other-vm-models/ashish-models/amodal-stage-gt-boxes/weights/best.pt \
+    --modal-stage-model /home/schwartzd/other-vm-models/phil-models/modal-stage/weights/best.pt \
+    --analysis-dir ~/analysis/amodal-stage-gt-boxes \
+    --num-examples-to-visualise 0
+
+6
+python ./phil/AnalyseAllSets.py \
+    --data-dir /home/schwartzd/datasets-tainted/final \
+    --sets 'test-no-value-region-affixer-different-class, test-no-value-region-affixer-same-class-different-images, test-no-value-region-affixer-same-class-same-images, test-non-side-affixer-different-class, test-non-side-affixer-same-class-different-images, test-non-side-affixer-same-class-same-images, test-side-affixer-different-class, test-side-affixer-same-class-different-images, test-side-affixer-same-class-same-images, test-unaugmented' \
+    --batch-size 32 \
+    --model-name amodal-stage-exponentiated \
+    --weights /home/schwartzd/other-vm-models/ashish-models/amodal-stage-exponentiated/weights/best.pt \
+    --modal-stage-model /home/schwartzd/other-vm-models/phil-models/modal-stage/weights/best.pt \
+    --analysis-dir ~/analysis/amodal-stage-exponentiated \
+    --num-examples-to-visualise 0
+
+7
+python ./phil/AnalyseAllSets.py \
+    --data-dir /home/schwartzd/datasets-verified-tiny/reduced-verified-tiny \
+    --sets 'test-no-value-region-affixer-different-class, test-no-value-region-affixer-same-class-different-images, test-no-value-region-affixer-same-class-same-images, test-non-side-affixer-different-class, test-non-side-affixer-same-class-different-images, test-non-side-affixer-same-class-same-images, test-side-affixer-different-class, test-side-affixer-same-class-different-images, test-side-affixer-same-class-same-images, test-unaugmented' \
+    --batch-size 32 \
+    --model-name amodal-stage-verified-tiny-ashish-vm \
+    --weights /home/schwartzd/other-vm-models/ashish-models/amodal-stage-verified-tiny-ashish-vm/weights/best.pt \
+    --modal-stage-model /home/schwartzd/other-vm-models/phil-models/modal-stage-verified-tiny/weights/best.pt \
+    --analysis-dir ~/analysis/amodal-stage-verified-tiny-ashish-vm \
+    --num-examples-to-visualise 0
+
+8
+python ./phil/AnalyseAllSets.py \
+    --data-dir /home/schwartzd/datasets-tainted/final \
+    --sets 'test-no-value-region-affixer-different-class, test-no-value-region-affixer-same-class-different-images, test-no-value-region-affixer-same-class-same-images, test-non-side-affixer-different-class, test-non-side-affixer-same-class-different-images, test-non-side-affixer-same-class-same-images, test-side-affixer-different-class, test-side-affixer-same-class-different-images, test-side-affixer-same-class-same-images, test-unaugmented' \
+    --batch-size 32 \
+    --model-name baseline-original \
+    --weights /home/schwartzd/project/yolov5/runs/train/baseline-original/weights/best.pt \
+    --analysis-dir ~/analysis/baseline-original \
+    --num-examples-to-visualise 0
+
+9
+python ./phil/AnalyseAllSets.py \
+    --data-dir /home/schwartzd/datasets-tainted/final \
+    --sets 'test-no-value-region-affixer-different-class, test-no-value-region-affixer-same-class-different-images, test-no-value-region-affixer-same-class-same-images, test-non-side-affixer-different-class, test-non-side-affixer-same-class-different-images, test-non-side-affixer-same-class-same-images, test-side-affixer-different-class, test-side-affixer-same-class-different-images, test-side-affixer-same-class-same-images, test-unaugmented' \
+    --batch-size 32 \
+    --model-name amodal-stage \
+    --weights /home/schwartzd/project/yolov5/runs/train/amodal-stage/weights/best.pt \
+    --modal-stage-model /home/schwartzd/other-vm-models/phil-models/modal-stage/weights/best.pt \
+    --analysis-dir ~/analysis/amodal-stage \
+    --num-examples-to-visualise 0
+
+
+10
+python ./phil/AnalyseAllSets.py \
+    --data-dir /home/schwartzd/datasets-verified-tiny/reduced-verified-tiny \
+    --sets 'test-no-value-region-affixer-different-class, test-no-value-region-affixer-same-class-different-images, test-no-value-region-affixer-same-class-same-images, test-non-side-affixer-different-class, test-non-side-affixer-same-class-different-images, test-non-side-affixer-same-class-same-images, test-side-affixer-different-class, test-side-affixer-same-class-different-images, test-side-affixer-same-class-same-images, test-unaugmented' \
+    --batch-size 32 \
+    --model-name baseline-optimizing-verified-tiny \
+    --weights /home/schwartzd/project/yolov5/runs/train/baseline-optimizing-verified-tiny/weights/best.pt \
+    --analysis-dir ~/analysis/baseline-optimizing-verified-tiny \
+    --num-examples-to-visualise 0
