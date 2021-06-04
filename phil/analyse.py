@@ -1,3 +1,6 @@
+import logging
+import logging.config
+import yaml
 import argparse
 import os
 from pathlib import Path
@@ -15,6 +18,14 @@ from phil.analysis.SeverityVsGoodness import SeverityVsGoodness
 IMG_WIDTH = 1224
 IMG_HEIGHT = 370
 PLT_TEXT_OFFSET = -10
+
+def setup_logging(logging_config_path: str = 'logging.yaml', default_level: int = logging.INFO) -> None:
+    if os.path.exists(logging_config_path):
+        with open(logging_config_path, 'rt') as file:
+            config = yaml.safe_load(file.read())
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(level=default_level)
 
 ##########################################################################################
 # Helpers
@@ -248,7 +259,7 @@ def generate_mask(label_filepath: Path) -> np.ndarray:
         (xTopLeft, yTopLeft, xBottomRight, yBottomRight) = boundingBox
         mask[yTopLeft:yBottomRight+1, xTopLeft:xBottomRight+1] = 0
 
-    return np.invert(np.array(mask))
+    return np.invert(np.array(mask).astype(bool))
 
 def get_mean_IoU(IoU_and_occlusion_severity_per_image: Dict[str, Tuple[float, float]]) -> float:
     return np.mean([IoU_and_occlusion_severity_per_image[key][0] for key in IoU_and_occlusion_severity_per_image.keys()])
@@ -269,7 +280,7 @@ def compute_pixelwise_occlusion_severity(amodal_mask: np.ndarray, modal_mask: np
     if num_amodal_covered == 0:
         return 0
 
-    occlusion_severity = num_modal_covered/num_amodal_covered
+    occlusion_severity = 1.-num_modal_covered/num_amodal_covered
     return occlusion_severity
 ##########################################################################################
 # End Pixelwise Occlusion Severity
@@ -279,6 +290,10 @@ def compute_pixelwise_occlusion_severity(amodal_mask: np.ndarray, modal_mask: np
 # Write to file
 ##########################################################################################
 def append_IoU_and_occlusion_severity_to_csv(IoU_and_occlusion_severity_per_image: Dict[str, Tuple[float, float]], filepath: Path, split_name: str):
+    logger = logging.getLogger(__name__)
+    logger.debug(f"Filepath: {filepath}")
+    logger.debug(f"Split name: {split_name}")
+    logger.debug(f"IoU_and_occlusion_severity_per_image: {IoU_and_occlusion_severity_per_image}")
     mean_IoU = get_mean_IoU(IoU_and_occlusion_severity_per_image)
     mean_occlusion_severity = get_mean_occlusion_severity(IoU_and_occlusion_severity_per_image)
     
@@ -357,7 +372,7 @@ def traverse_predicted(yolo_path: str, model_exp_dir: str, baseline_exp_dir: str
         # TODO: this seems expensive, can we randomly subsample this or only do it in interesting cases?
         # Plotting
         if random.random() < num_examples_to_visualise/num_labels:
-            plot_bbox_yolo_modal_amodal_predictions_arrays(amodal_label, modal_label, prediction_label, baseline_prediction_label, image, image_id, show_plot, Path(analysis_dir, f"{model_name}-{split_name}_predictions"))
+            plot_bbox_yolo_modal_amodal_predictions_arrays(amodal_label, modal_label, prediction_label, baseline_prediction_label, image, image_id, show_plot, Path(analysis_dir, split_name, f"{model_name}_predictions"))
 
     if baseline_exp_dir is not None:
         """
@@ -367,12 +382,12 @@ def traverse_predicted(yolo_path: str, model_exp_dir: str, baseline_exp_dir: str
         # TODO: make savepath configurable from argparse
         severity_vs_goodness_baseline.collector.produce_histogram(
             num_bins=10, title="Baseline Model - Prediction IoU by Occlusion Severity",
-            x_label="Occlusion Severity", y_label="predicted box/ground truth IoU", savepath=f"{analysis_dir}/histograms/{model_name}-{split_name}.png"
+            x_label="Occlusion Severity", y_label="predicted box/ground truth IoU", savepath=f"{analysis_dir}/{split_name}/histograms/{model_name}.png"
         )
         # TODO: make title configurable from argparse to generate more specific title here
     severity_vs_goodness_experimental.collector.produce_histogram(
         num_bins=10, title="Experimental Model - Prediction IoU by Occlusion Severity",
-        x_label="Occlusion Severity", y_label="predicted box/ground truth IoU", savepath=f"{analysis_dir}/histograms/{baseline_name}-{split_name}.png"
+        x_label="Occlusion Severity", y_label="predicted box/ground truth IoU", savepath=f"{analysis_dir}/{split_name}/histograms/{baseline_name}.png"
     )
     append_IoU_and_occlusion_severity_to_csv(IoU_and_occlusion_severity_per_image, f"{analysis_dir}/iou_and_occlusion_severity.csv", split_name)
 
@@ -396,6 +411,10 @@ if __name__ == "__main__":
         - Results of running yolov5/test.py on the final data. This will give you the model_exp_num. Here is an example:
             `python test.py --img 640 --batch-size 1 --data ../fixed_final.yaml --weights ../baseline-amodal-combined-train/weights/best.pt --task val --save-hybrid --save-conf --conf-thres 0.25 --iou-thres 0.6`
     """
+    # Logging Setup
+    setup_logging()
+    logger = logging.getLogger(__name__)
+    logger.info('Started')
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-exp-dir', type=str, default=None, help='experiment output dir for model of interest')
@@ -410,10 +429,8 @@ if __name__ == "__main__":
     parser.add_argument('--num-examples-to-visualise', type=int, default=5, help='num examples to visualise (non-deterministic)')
     args = parser.parse_args()
 
-    if args.analysis_dir is not None and not os.path.exists(Path(args.analysis_dir, "histograms")):
-        os.makedirs(Path(args.analysis_dir, "histograms"))
-
     traverse_predicted(args.yolo, args.model_exp_dir, args.baseline_exp_dir, args.model_name, args.baseline_name, args.data, args.split_name, args.show_plot, args.analysis_dir, args.num_examples_to_visualise)
+    logger.info('Finished')
 
 
 """
