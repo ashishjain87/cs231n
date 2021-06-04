@@ -1,6 +1,6 @@
 import numpy as np
 
-from phil.analysis import BoxplotHistogramCollector, Todos
+from phil.analysis import BoxplotHistogramCollector
 from phil.analysis import YoloBox
 from phil.analysis.SingleExampleMetric import SingleExampleMetric
 
