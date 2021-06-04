@@ -1,10 +1,10 @@
 import argparse
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 # PATH_TO_TEST_DIR = '/Users/philipmateopfeffer/Downloads/cs231n_class_project/yolov5/'
-def create_yaml(data_dir: Path, sets: List, batch_size: int, weights_path: Path, model_name: str, baseline_exp_dir: Path, baseline_name: str, analysis_dir: Path, num_examples_to_visualise: int, show_plot: bool):
+def create_yaml(data_dir: Path, sets: List, batch_size: int, weights_path: Path, model_name: str, baseline_exp_dir: Path, baseline_name: str, analysis_dir: Path, num_examples_to_visualise: int, show_plot: bool, modal_stage_model: Optional[str]):
     for set in sets:
         yaml_path = Path(analysis_dir, "test.yaml")
         with open(yaml_path, 'w') as yaml_file:
@@ -16,8 +16,10 @@ def create_yaml(data_dir: Path, sets: List, batch_size: int, weights_path: Path,
                 os.makedirs(Path(analysis_dir, set, "inference_outputs"))
             if not os.path.exists(Path(analysis_dir, set, "histograms")):
                 os.makedirs(Path(analysis_dir, set, "histograms"))
+        
+        modal_stage_model = f"--modal-stage-model {modal_stage_model}" if modal_stage_model is not None else ""
 
-        os.system(f"python ../yolov5/test.py --img 640 --name {model_name}/{set} --batch-size {batch_size} --data {yaml_path} --weights {weights_path} --task test --save-hybrid --save-conf --conf-thres 0.25 --iou-thres 0.6 | tee {analysis_dir}/{set}/inference_outputs/results.txt")
+        os.system(f"python ../yolov5/test.py {modal_stage_model} --img 640 --name {model_name}/{set} --batch-size {batch_size} --data {yaml_path} --weights {weights_path} --task test --save-hybrid --save-conf --conf-thres 0.25 --iou-thres 0.6 | tee {analysis_dir}/{set}/inference_outputs/results.txt")
         baseline_dir_str = f"--baseline-exp-dir {Path(baseline_exp_dir)} " if baseline_exp_dir is not None else ""
         show_plot_str = f"--show-plot " if show_plot else ""
 
@@ -41,12 +43,15 @@ if __name__ == "__main__":
         --sets 'val-side-affixer-different-class' \
         --batch-size 1 \
         --model-name baseline-amodal-combined-train \
-        --weights ../baseline-amodal-combined-train/weights/best.pt \
-        --baseline-name baseline \
-        --baseline-exp-dir /Users/philipmateopfeffer/Downloads/cs231n_class_project/yolov5/runs/test/exp41/ \
+        --weights /Users/philipmateopfeffer/Downloads/cs231n_class_project/best1.pt \
+        --modal-stage-model /Users/philipmateopfeffer/Downloads/cs231n_class_project/best2.pt \
         --analysis-dir /Users/philipmateopfeffer/Downloads/cs231n_class_project/analysis-baseline-amodal-combined-train \
         --num-examples-to-visualise 0 \
         --show-plot
+
+    Can add:
+        --baseline-name baseline \
+        --baseline-exp-dir /Users/philipmateopfeffer/Downloads/cs231n_class_project/yolov5/runs/test/exp41/ \
 
     Recommendation:
         - Call the analysis directory something to do with the model you are running, e.g.
@@ -61,6 +66,7 @@ if __name__ == "__main__":
     parser.add_argument('--model-name', type=str, default=None, help='model name')
     parser.add_argument('--show-plot', action='store_true', help='show the plot in matplotlib')
     parser.add_argument('--analysis-dir', type=str, default=None, help='dir to save plot')
+    parser.add_argument('--modal-stage-model', type=str, default=None, help='modal stage weights path')
     parser.add_argument('--baseline-name', type=str, default=None, help='baseline model name')
     parser.add_argument('--baseline-exp-dir', type=str, default=None, help='dir to baseline experiment runs/exp<NUM>')
     parser.add_argument('--num-examples-to-visualise', type=int, default=5, help='num examples to visualise (non-deterministic)')
@@ -89,5 +95,5 @@ if __name__ == "__main__":
         os.system(f"rm {iou_and_occlusion_severity_file}")
         assert not os.path.exists(iou_and_occlusion_severity_file)
 
-    create_yaml(Path(args.data_dir), args.sets, args.batch_size, Path(args.weights), args.model_name, args.baseline_exp_dir, args.baseline_name, Path(args.analysis_dir), args.num_examples_to_visualise, args.show_plot)
+    create_yaml(Path(args.data_dir), args.sets, args.batch_size, Path(args.weights), args.model_name, args.baseline_exp_dir, args.baseline_name, Path(args.analysis_dir), args.num_examples_to_visualise, args.show_plot, args.modal_stage_model)
 
